@@ -42,7 +42,7 @@ public class AuthController : ControllerBase
             await _context.SaveChangesAsync();
             return new JsonResult(new {status="success",message="OTP sent to email"});
         }
-        else if (existingUser.otp_expiration != null && isOtpExpired(existingUser.otp_expiration.Value))
+        if (existingUser.otp_expiration != null && isOtpExpired(existingUser.otp_expiration.Value))
         {
             int otp=generateOtp();
             existingUser.otp=otp;
@@ -51,10 +51,8 @@ public class AuthController : ControllerBase
             await _context.SaveChangesAsync();
             return new JsonResult(new {status="success",message="OTP sent to email"});
         }
-        else
-        {
-            return new JsonResult(new {status="success",message="OTP Already sent to email"});
-        }
+        return new JsonResult(new {status="success",message="OTP Already sent to email"});
+        
     }
     [HttpPost("auth/validate-otp")]
     public async Task<JsonResult> ValidateOtp([FromBody] User user)

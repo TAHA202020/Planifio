@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace server_planifio.Migrations
 {
     [DbContext(typeof(PlanifioDbContext))]
-    partial class PlanifioDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250416132135_AddProjectsTable")]
+    partial class AddProjectsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,13 +32,7 @@ namespace server_planifio.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
-                    b.Property<string>("UserEmail")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("UserEmail");
 
                     b.ToTable("Projects");
                 });
@@ -54,22 +51,6 @@ namespace server_planifio.Migrations
                     b.HasKey("email");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("Project", b =>
-                {
-                    b.HasOne("User", "User")
-                        .WithMany("Projects")
-                        .HasForeignKey("UserEmail")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("User", b =>
-                {
-                    b.Navigation("Projects");
                 });
 #pragma warning restore 612, 618
         }

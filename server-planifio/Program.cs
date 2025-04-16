@@ -44,8 +44,12 @@ builder.Services.AddAuthentication(options=>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
 });
+
+
+
 var app = builder.Build();
 app.UseCors("AllowMyApp");
 app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 app.Run();

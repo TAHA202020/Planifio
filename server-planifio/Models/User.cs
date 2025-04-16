@@ -7,4 +7,5 @@ public class User
     public int? otp { get; set; }
 
     public DateTime? otp_expiration { get; set; }
+    public ICollection<Project> Projects { get; set; }
 }
