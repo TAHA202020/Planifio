@@ -2,10 +2,11 @@ using System.ComponentModel.DataAnnotations;
 
 public class User
 {
-     [Key]
-    public string email { get; set; }
-    public int? otp { get; set; }
+    [Key]
+    public string Email { get; set; }
+     public int? otp { get; set; }
 
     public DateTime? otp_expiration { get; set; }
-    public ICollection<Project> Projects { get; set; }
+
+    public List<Board> Boards { get; set; }
 }

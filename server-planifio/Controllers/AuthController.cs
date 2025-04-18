@@ -6,7 +6,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-[Route("/")]
+[Route("")]
 public class AuthController : ControllerBase
 {
     private readonly PlanifioDbContext _context;
@@ -22,13 +22,13 @@ public class AuthController : ControllerBase
     [HttpPost("auth/request-otp")]
     public async Task<JsonResult> Index([FromBody] User user)
     {
-        User existingUser=await _context.Users.FindAsync(user.email);
+        User existingUser=await _context.Users.FindAsync(user.Email);
         if(existingUser==null)
         {
             int otp=generateOtp();
-            User newUser = new User {email = user.email,otp = otp,otp_expiration = DateTime.UtcNow.AddMinutes(3)};
+            User newUser = new User {Email = user.Email,otp = otp,otp_expiration = DateTime.UtcNow.AddMinutes(3)};
             _context.Users.Add(newUser);
-            await SendOtpToEmailAsync(user.email, otp);
+            await SendOtpToEmailAsync(user.Email, otp);
             await _context.SaveChangesAsync();
 
             return new JsonResult(new {status="success",message="User Created and OTP Sent to the Email"});;
@@ -38,26 +38,26 @@ public class AuthController : ControllerBase
             int otp=generateOtp();
             existingUser.otp=otp;
             existingUser.otp_expiration=DateTime.UtcNow.AddMinutes(3);
-            await SendOtpToEmailAsync(existingUser.email, otp);
+            await SendOtpToEmailAsync(existingUser.Email, otp);
             await _context.SaveChangesAsync();
-            return new JsonResult(new {status="success",message="OTP sent to email"});
+            return new JsonResult(new {status="success",message="OTP sent to Email"});
         }
         if (existingUser.otp_expiration != null && isOtpExpired(existingUser.otp_expiration.Value))
         {
             int otp=generateOtp();
             existingUser.otp=otp;
             existingUser.otp_expiration=DateTime.UtcNow.AddMinutes(3);
-            await SendOtpToEmailAsync(existingUser.email, otp);
+            await SendOtpToEmailAsync(existingUser.Email, otp);
             await _context.SaveChangesAsync();
-            return new JsonResult(new {status="success",message="OTP sent to email"});
+            return new JsonResult(new {status="success",message="OTP sent to Email"});
         }
-        return new JsonResult(new {status="success",message="OTP Already sent to email"});
+        return new JsonResult(new {status="success",message="OTP Already sent to Email"});
         
     }
     [HttpPost("auth/validate-otp")]
     public async Task<JsonResult> ValidateOtp([FromBody] User user)
     {
-        User existingUser=await _context.Users.FindAsync(user.email);
+        User existingUser=await _context.Users.FindAsync(user.Email);
         if(existingUser==null)
         {
             return new JsonResult(new {status="error",message="User not found"});
@@ -75,7 +75,7 @@ public class AuthController : ControllerBase
             existingUser.otp=null;
             existingUser.otp_expiration=null;
             await _context.SaveChangesAsync();
-            return createJwtToken(user.email);
+            return createJwtToken(user.Email);
         }
         else
         {
@@ -84,11 +84,11 @@ public class AuthController : ControllerBase
     }
 
 
-    private JsonResult createJwtToken(string email){
+    private JsonResult createJwtToken(string Email){
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.Email, Email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -140,8 +140,8 @@ public class AuthController : ControllerBase
         }
         return false;
     }
-    //TODO:Send OTP to email
-    private async Task SendOtpToEmailAsync(string email, int otp)
+    //TODO:Send OTP to Email
+    private async Task SendOtpToEmailAsync(string Email, int otp)
 {
     string smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
     string smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
@@ -149,7 +149,7 @@ public class AuthController : ControllerBase
     {
         var message = new MimeMessage();
         message.From.Add(new MailboxAddress("Planifio", smtpUsername));
-        message.To.Add(new MailboxAddress("", email));
+        message.To.Add(new MailboxAddress("", Email));
         message.Subject = "Your OTP Code";
 
         var bodyBuilder = new BodyBuilder
@@ -166,7 +166,7 @@ public class AuthController : ControllerBase
             await client.DisconnectAsync(true);
         }
 
-        Console.WriteLine("OTP sent to email.");
+        Console.WriteLine("OTP sent to Email.");
     }
     catch (Exception ex)
     {

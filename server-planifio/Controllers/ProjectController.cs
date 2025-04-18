@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
-[Route("project")]
-public class ProjectController:ControllerBase
+[Route("boards")]
+public class BoardsController:ControllerBase
 {
     private readonly PlanifioDbContext _context;
 
-    public ProjectController(PlanifioDbContext context)
+    public BoardsController(PlanifioDbContext context)
     {
         _context = context;
     }
@@ -16,17 +16,21 @@ public class ProjectController:ControllerBase
 
     [Authorize]
     [HttpPost("create")]
-    public async Task<JsonResult> CreateProject([FromBody] Project project)
+    public async Task<JsonResult> Createboard([FromBody] Board board)
     {
         Console.WriteLine(User.FindFirst(ClaimTypes.Email)?.Value);
-        if (project == null || string.IsNullOrEmpty(project.Name))
+        if (board == null || string.IsNullOrEmpty(board.Name))
         {
-            return new JsonResult(new { status = "error", message = "Invalid project data" });
+            return new JsonResult(new { status = "error", message = "Invalid board data" });
         }
-        project.UserEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-        _context.Projects.Add(project);
+        board.UserEmail = User.FindFirst(ClaimTypes.Email).Value;
+        if(board.UserEmail == null)
+        {
+            return new JsonResult(new { status = "error", message = "User email not found" });
+        }
+        _context.Boards.Add(board);
         await _context.SaveChangesAsync();
 
-        return new JsonResult(new { status = "success", message = "Project created successfully" });
+        return new JsonResult(new { status = "success", message = "board created successfully" });
     }
 }
