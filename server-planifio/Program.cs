@@ -43,6 +43,22 @@ builder.Services.AddAuthentication(options=>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
+    options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var result = new
+                {
+                    status = "error",
+                    message = "Authentication failed"
+                };
+
+                return context.Response.WriteAsJsonAsync(result);
+            }
+        };
 });
 
 

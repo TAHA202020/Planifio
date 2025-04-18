@@ -17,4 +17,6 @@ public class Board
     // Navigation property
     [ForeignKey("UserEmail")]
     public User User { get; set; }
+
+    public List<Lists> Lists { get; set; } = new(); 
 }

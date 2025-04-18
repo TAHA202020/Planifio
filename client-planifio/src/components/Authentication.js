@@ -52,7 +52,7 @@ export default function Authentication() {
         if(Authenticated){
             navigate("/dashboard")
         }
-    }   ,[])
+    }  )
     return (<div className="w-full h-[100vh] flex flex-col items-center justify-center">
         <div className="card p-10">
             <div className="card-header justify-center">Login/Register</div>
