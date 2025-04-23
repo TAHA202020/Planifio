@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Utilities;
 
 
 [Route("boards")]
@@ -13,6 +14,46 @@ public class BoardsController:ControllerBase
     {
         _context = context;
     }
+
+    [Authorize]
+    [HttpPost("lists/create")]
+    public async Task<JsonResult> CreateList([FromBody] Lists lists)
+    {
+        try {
+        int position =await GetLastPositionWithinBoard(lists.BoardId);
+        lists.Position = position ;
+        lists.Id = Guid.NewGuid(); 
+        
+        var board = await _context.Boards
+            .Include(b => b.Lists) 
+            .FirstOrDefaultAsync(b => b.Id == lists.BoardId);
+         
+        if (board == null)
+        {
+            return new JsonResult(new { status = "error", message = "Board not found." });
+        }
+        _context.Lists.Add(lists);
+        await _context.SaveChangesAsync();
+        
+       return new JsonResult(new
+{
+            status = "success",
+            list = new
+            {
+                lists.Id,
+                lists.Title,
+                lists.Position,
+                lists.BoardId
+            }
+        });
+        }
+        catch(Exception ex)
+        {
+            return new JsonResult(new { status = "error", message = ex.Message });
+        }
+        
+    }
+
 
 
     [Authorize]
@@ -63,5 +104,23 @@ public class BoardsController:ControllerBase
         .ToListAsync();
 
         return new JsonResult(new { status = "success", boards });
+    }
+    public async Task<int> GetLastPositionWithinBoard(Guid boardId)
+    {
+        var board = await _context.Boards
+            .Include(b => b.Lists)
+            .FirstOrDefaultAsync(b => b.Id == boardId);
+        if (board == null)
+        {
+            throw new Exception("Board not found.");
+        }
+
+        if (board.Lists.Count==0)
+        {
+            return 1; 
+        }
+        var lastPosition = board.Lists.Max(l => l.Position)+1;
+
+        return lastPosition;
     }
 }

@@ -152,7 +152,7 @@ export default function Dashboard()
                     <nav className="menu bg-gray-2 rounded-md mt-5">
                         <section className="menu-section">
                             <ul className="menu-items">
-                                {Boards.values().map((board)=><li key={board.id} onClick={()=>{overlayRef.current.click();navigate(`/dashboard/${board.id}`)}} className="menu-item rounded-none">{board.name}</li>)}
+                                {Array.from(Boards.values()).map((board)=><li key={board.id} onClick={()=>{overlayRef.current.click();navigate(`/dashboard/${board.id}`)}} className="menu-item rounded-none">{board.name}</li>)}
                             </ul>
                         </section>
                     </nav>
