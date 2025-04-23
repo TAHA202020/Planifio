@@ -122,7 +122,7 @@ export default function Dashboard()
             </div>
         )
     }
-    return (<>
+    return (<div className='flex flex-col h-[100vh]'>
     <div className='absolute bottom-5 right-5'>
     <label className="btn btn-primary rounded-md" htmlFor="modal-3">Create Project</label>
                         <input className="modal-state" id="modal-3" type="checkbox" />
@@ -165,8 +165,8 @@ export default function Dashboard()
             <img src={user} alt="avatar" />
         </div>
     </div>
-    <div>
+    <div className='flex-auto w-[100vw] p-[10px]'>
         <Outlet/>
     </div>
-    </>)
+    </div>)
 }

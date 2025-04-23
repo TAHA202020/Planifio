@@ -13,13 +13,12 @@ export default function Lists() {
     
 
     return (
-        <>
-            <div className=" h-[100vw] flex flex-row items-start justify-start mt-2 overflow-x-auto gap-2">
+            <div className="flex flex-row items-start justify-start mt-2 overflow-x-auto gap-5 h-full">
                 {listArray.map((value, index) => {
                     return (
                         <div
                             key={index}
-                            className="w-[100px] h-10 bg-[#232323] rounded-md flex items-center justify-start p-2"
+                            className="min-w-[300px] w-[300px] h-10 bg-[#232323] rounded-md flex items-center justify-start p-2"
                         >
                             {value.title}
                         </div>
@@ -27,6 +26,5 @@ export default function Lists() {
                 })}
                 <AddList boardId={boardId}/>
             </div>
-        </>
     );
 }

@@ -32,7 +32,7 @@ function AddList({ boardId }) {
             });
     };
 const [newListName, setNewListName] = useState("");
-return (<div className="flex flex-row items-center justify-start gap-2 p-2 bg-[#232323] rounded-md">
+return (<div className="min-w-[300px] w-[300px] flex flex-row items-center justify-start gap-2 p-2 bg-[#232323] rounded-md">
     <input
         className="input input-sm rounded-sm"
         placeholder="ListName"
