@@ -7,18 +7,14 @@ const BoardsStore = create((set) => ({
 
   addList: (boardId, newList) =>
     set((state) => {
-      const updatedBoards = new Map(state.boards); // Clone the boards map
+      const updatedBoards = new Map(state.boards);
       const board = updatedBoards.get(boardId);
 
-      if (!board) return {}; // board not found
+      if (!board) return {}; 
 
-      // Clone the lists map for that board
       const updatedLists = new Map(board.lists);
-
-      // Add new list to the board's list map
       updatedLists.set(newList.id, { ...newList });
-
-      // Create a new board object with the updated lists map
+      
       updatedBoards.set(boardId, {
         ...board,
         lists: updatedLists,
