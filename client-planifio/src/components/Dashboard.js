@@ -3,7 +3,7 @@ import { useEffect, useRef,useState,useContext} from 'react'
 import {isAuthenticated} from "../Utils/Auth"
 import {Outlet, useNavigate} from 'react-router-dom'
 import user from "../assets/user.svg"
-import { BoardsContext } from '../Context/BoardsContext'
+import BoardsStore from '../Context/BoardsStore'
 export default function Dashboard() 
 {
     const createProjectRef=useRef(null)
@@ -12,7 +12,43 @@ export default function Dashboard()
     const navigate=useNavigate()
     const isAuth = isAuthenticated()
     const [projectName ,setProjectName] = useState("")
-    const {Boards,setBoards} = useContext(BoardsContext);
+    const Boards=BoardsStore((state) => state.boards)
+    const setBoards=BoardsStore((state) => state.setBoards)
+    const transformNestedBoardData = (boardsFromBackend) => {
+        const boards = new Map();
+      
+        for (const board of boardsFromBackend) {
+          const listMap = new Map();
+      
+          for (const list of board.lists) {
+            const cardMap = new Map();
+      
+            for (const card of list.cards) {
+              cardMap.set(card.id, {
+                id: card.id,
+                title: card.title,
+                description: card.description,
+                position: card.position,
+              });
+            }
+      
+            listMap.set(list.id, {
+              id: list.id,
+              title: list.title,
+              position: list.position,
+              cards: cardMap,
+            });
+          }
+          
+          boards.set(board.id, {
+            id: board.id,
+            name: board.name,
+            lists: listMap,
+          });
+        }
+        return boards;
+      };
+      
     const loadData=async ()=>
     {
         try{
@@ -27,7 +63,7 @@ export default function Dashboard()
                 {
                     const data=await res.json()
                     console.log(data)
-                    setBoards(data.boards)
+                    setBoards(transformNestedBoardData(data.boards))
                     setLoading(false)
                 }
                 else if(res.status===401)
@@ -116,7 +152,7 @@ export default function Dashboard()
                     <nav className="menu bg-gray-2 rounded-md mt-5">
                         <section className="menu-section">
                             <ul className="menu-items">
-                                {Boards.map((board)=><li key={board.id} onClick={()=>{overlayRef.current.click();navigate(`/dashboard/${board.id}`)}} className="menu-item rounded-none">{board.name}</li>)}
+                                {Boards.values().map((board)=><li key={board.id} onClick={()=>{overlayRef.current.click();navigate(`/dashboard/${board.id}`)}} className="menu-item rounded-none">{board.name}</li>)}
                             </ul>
                         </section>
                     </nav>

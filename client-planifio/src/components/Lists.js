@@ -1,18 +1,20 @@
-import { useContext } from "react"
 import { Navigate, useParams } from "react-router-dom"
-import { BoardsContext } from "../Context/BoardsContext"
-
+import BoardsStore from "../Context/BoardsStore"
 
 export default function Lists() 
 {
-    const { Boards } = useContext(BoardsContext)
+    
     const { boardId } = useParams()
-    const board = Boards.find((board) => board.id === boardId)
+    const Boards=BoardsStore((state) => state.boards)
+    const board = Boards.get(boardId)
     if (board==undefined || board==null) {
         return <Navigate to="/dashboard" />
     }
+    const lists = board.lists
+    const listArray = Array.from(lists.values())
     return <>
         <div className="w-full h-full flex flex-col items-center justify-center">
+            
         </div>
     </>
 }
