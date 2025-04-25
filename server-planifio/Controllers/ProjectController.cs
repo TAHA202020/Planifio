@@ -89,19 +89,24 @@ public class BoardsController:ControllerBase
         .Select(b => new {
             b.Id,
             b.Name,
-            Lists = b.Lists.Select(l => new {
-                l.Id,
-                l.Title,
-                l.Position,
-                Cards = l.Cards.Select(c => new {
-                    c.Id,
-                    c.Title,
-                    c.Description,
-                    c.Position
+            Lists = b.Lists
+                .OrderBy(l => l.Position) // Order lists by position
+                .Select(l => new {
+                    l.Id,
+                    l.Title,
+                    l.Position,
+                    Cards = l.Cards
+                        .OrderBy(c => c.Position) // Order cards by position
+                        .Select(c => new {
+                            c.Id,
+                            c.Title,
+                            c.Description,
+                            c.Position
+                        }).ToList()
                 }).ToList()
-            }).ToList()
         })
         .ToListAsync();
+
 
         return new JsonResult(new { status = "success", boards });
     }
@@ -123,4 +128,50 @@ public class BoardsController:ControllerBase
 
         return lastPosition;
     }
+    [HttpPost("validate-drag")]
+public async Task<IActionResult> ValidateAndUpdateListPosition([FromBody] UpdateListPositionDto request)
+{
+        try
+        {
+            var boardLists = await _context.Lists
+                .Where(l => l.BoardId == request.BoardId)
+                .OrderBy(l => l.Position)
+                .ToListAsync();
+            if (boardLists == null || boardLists.Count == 0)
+            {
+                return NotFound("No lists found for this board");
+            }
+            Console.WriteLine($"Found {boardLists.Count} lists for board with ID {request.BoardId}");
+            var oldPositions = boardLists.Select(l => new { l.Id, l.Position }).ToList();
+            foreach (var list in boardLists.Where(l => l.Position >= request.NewPosition && l.Id != request.ListId))
+            {
+                list.Position += 1;
+            }
+            var draggedList = boardLists.FirstOrDefault(l => l.Id == request.ListId);
+            if (draggedList == null)
+            {
+                return NotFound("List not found");
+            }
+
+            draggedList.Position = request.NewPosition;
+            await _context.SaveChangesAsync();
+            return Ok(new { success = true, message = "Position updated successfully." });
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error occurred while updating position: {ex.Message}");
+            return StatusCode(500, new { success = false, message = "Failed to update the position.", error = ex.Message });
+        }
+    }
+}
+
+
+
+
+public class UpdateListPositionDto
+{
+    public Guid ListId { get; set; } // List ID to update
+
+    public Guid BoardId { get; set; } // Board ID to which the list belongs
+    public int NewPosition { get; set; } // New position of the list
 }
