@@ -129,44 +129,71 @@ public class BoardsController:ControllerBase
         return lastPosition;
     }
     [HttpPost("validate-drag")]
-public async Task<IActionResult> ValidateAndUpdateListPosition([FromBody] UpdateListPositionDto request)
+public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPositionDto updateListPositionDto)
 {
+    var listId = updateListPositionDto.ListId;
+    var boardId = updateListPositionDto.BoardId;
+    var newPosition = updateListPositionDto.NewPosition;
+
+    if (listId == Guid.Empty || boardId == Guid.Empty || newPosition < 0)
+    {
+        return new JsonResult(new { status = "error", message = "Invalid input data" }); 
+    }
+
+    var board = await _context.Boards
+        .Include(b => b.Lists)
+        .FirstOrDefaultAsync(b => b.Id == boardId);
+
+    if (board == null) return new JsonResult(new { status = "error", message = "Board not found" });
+
+    // Get the list to update
+    var listToUpdate = board.Lists.FirstOrDefault(l => l.Id == listId);
+    if (listToUpdate == null) return new JsonResult(new { status = "error", message = "List not found" });
+
+    // Ensure the new position is within the valid range (0 to the number of lists - 1)
+    if (newPosition < 0 || newPosition >= board.Lists.Count) return new JsonResult(new { status = "error", message = "Invalid new position" });
+
+    // Sort the lists based on their current position to ensure correct ordering
+    var sortedLists = board.Lists.OrderBy(l => l.Position).ToList();
+
+    // Adjust positions of lists based on the new position
+    if (newPosition < listToUpdate.Position)
+    {
+        // Moving up in the list
+        foreach (var list in sortedLists.Where(l => l.Position >= newPosition && l.Position < listToUpdate.Position))
+        {
+            list.Position++;
+        }
+    }
+    else if (newPosition > listToUpdate.Position)
+    {
+        // Moving down in the list
+        foreach (var list in sortedLists.Where(l => l.Position <= newPosition && l.Position > listToUpdate.Position))
+        {
+            list.Position--;
+        }
+    }
+
+    // Set the new position for the target list
+    listToUpdate.Position = newPosition;
+
+    // Save changes within a transaction to ensure consistency
+    using (var transaction = await _context.Database.BeginTransactionAsync())
+    {
         try
         {
-            var boardLists = await _context.Lists
-                .Where(l => l.BoardId == request.BoardId)
-                .OrderBy(l => l.Position)
-                .ToListAsync();
-            if (boardLists == null || boardLists.Count == 0)
-            {
-                return NotFound("No lists found for this board");
-            }
-            Console.WriteLine($"Found {boardLists.Count} lists for board with ID {request.BoardId}");
-            var oldPositions = boardLists.Select(l => new { l.Id, l.Position }).ToList();
-            foreach (var list in boardLists.Where(l => l.Position >= request.NewPosition && l.Id != request.ListId))
-            {
-                list.Position += 1;
-            }
-            var draggedList = boardLists.FirstOrDefault(l => l.Id == request.ListId);
-            if (draggedList == null)
-            {
-                return NotFound("List not found");
-            }
-
-            draggedList.Position = request.NewPosition;
             await _context.SaveChangesAsync();
-            return Ok(new { success = true, message = "Position updated successfully." });
+            await transaction.CommitAsync();
+            return new JsonResult(new { status = "success", message = "List position updated successfully" });
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"Error occurred while updating position: {ex.Message}");
-            return StatusCode(500, new { success = false, message = "Failed to update the position.", error = ex.Message });
+            await transaction.RollbackAsync();
+            return new JsonResult(new { status = "error", message = $"Error: {ex.Message}" });
         }
     }
 }
-
-
-
+}
 
 public class UpdateListPositionDto
 {

@@ -38,7 +38,7 @@ const oldState = new Map(BoardsStore.getState().boards);
   
       const data = await res.json();
   
-      if (data.success) {
+      if (data.status === "success") {
         console.log("Position updated successfully.");
         // Update the store with the updated boards data from the backend response
         return ;
