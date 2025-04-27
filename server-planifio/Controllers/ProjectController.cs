@@ -90,13 +90,13 @@ public class BoardsController:ControllerBase
             b.Id,
             b.Name,
             Lists = b.Lists
-                .OrderBy(l => l.Position) // Order lists by position
+                .OrderBy(l => l.Position)
                 .Select(l => new {
                     l.Id,
                     l.Title,
                     l.Position,
                     Cards = l.Cards
-                        .OrderBy(c => c.Position) // Order cards by position
+                        .OrderBy(c => c.Position)
                         .Select(c => new {
                             c.Id,
                             c.Title,
@@ -145,21 +145,12 @@ public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPosit
         .FirstOrDefaultAsync(b => b.Id == boardId);
 
     if (board == null) return new JsonResult(new { status = "error", message = "Board not found" });
-
-    // Get the list to update
     var listToUpdate = board.Lists.FirstOrDefault(l => l.Id == listId);
     if (listToUpdate == null) return new JsonResult(new { status = "error", message = "List not found" });
-
-    // Ensure the new position is within the valid range (0 to the number of lists - 1)
     if (newPosition < 0 || newPosition >= board.Lists.Count) return new JsonResult(new { status = "error", message = "Invalid new position" });
-
-    // Sort the lists based on their current position to ensure correct ordering
     var sortedLists = board.Lists.OrderBy(l => l.Position).ToList();
-
-    // Adjust positions of lists based on the new position
     if (newPosition < listToUpdate.Position)
     {
-        // Moving up in the list
         foreach (var list in sortedLists.Where(l => l.Position >= newPosition && l.Position < listToUpdate.Position))
         {
             list.Position++;
@@ -167,17 +158,12 @@ public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPosit
     }
     else if (newPosition > listToUpdate.Position)
     {
-        // Moving down in the list
         foreach (var list in sortedLists.Where(l => l.Position <= newPosition && l.Position > listToUpdate.Position))
         {
             list.Position--;
         }
     }
-
-    // Set the new position for the target list
     listToUpdate.Position = newPosition;
-
-    // Save changes within a transaction to ensure consistency
     using (var transaction = await _context.Database.BeginTransactionAsync())
     {
         try
@@ -193,6 +179,57 @@ public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPosit
         }
     }
 }
+
+
+[Authorize]
+[HttpPost("cards/create")]
+public async Task<JsonResult> CreateCard([FromBody] Card card)
+{
+    try
+    {
+        
+        // Validate input
+        if (card == null || string.IsNullOrEmpty(card.Title) || card.ListId == Guid.Empty)
+        {
+            return new JsonResult(new { status = "error", message = "Invalid card data" });
+        }
+        
+        // Find the List
+        var list = await _context.Lists
+            .Include(l => l.Cards)
+            .FirstOrDefaultAsync(l => l.Id == card.ListId);
+
+        if (list == null)
+        {
+            return new JsonResult(new { status = "error", message = "List not found" });
+        }
+        
+        // Set new card details
+        card.Position = list.Cards.Count > 0 ? list.Cards.Max(c => c.Position) + 1 : 0;
+        card.Description="";
+        // Add to database
+        _context.Cards.Add(card);
+        
+        await _context.SaveChangesAsync();
+        Console.WriteLine("--------------------------------------------------------------"+card.Id);
+        return new JsonResult(new
+        {
+            status = "success",
+            card = new
+            {
+                card.Id,
+                card.Title,
+                card.Position,
+                card.ListId
+            }
+        });
+    }
+    catch (Exception ex)
+    {
+        return new JsonResult(new { status = "error", message = ex.Message });
+    }
+}
+
 }
 
 public class UpdateListPositionDto

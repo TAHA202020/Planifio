@@ -1,53 +1,53 @@
 
-import { useEffect, useRef,useState,useContext} from 'react'
+import { useEffect, useRef,useState} from 'react'
 import {isAuthenticated} from "../Utils/Auth"
 import {Outlet, useNavigate} from 'react-router-dom'
 import user from "../assets/user.svg"
 import BoardsStore from '../Context/BoardsStore'
-export default function Dashboard() 
+import BoardsMenu from './BoardsMenu'
+import AddBoard from './AddBoard'
+export default function Dashboard({}) 
 {
     const createProjectRef=useRef(null)
     const overlayRef=useRef(null)
     const [Loading, setLoading] = useState(true)
     const navigate=useNavigate()
     const isAuth = isAuthenticated()
-    const [projectName ,setProjectName] = useState("")
-    const Boards=BoardsStore((state) => state.boards)
-    const setBoards=BoardsStore((state) => state.setBoards)
-    const transformNestedBoardData = (boardsFromBackend) => {
-        const boards = new Map();
+    const setBoardsStore=BoardsStore((state) => state.setBoardsStore)
+    const addBoard=BoardsStore((state) => state.addBoard)
+    function transformBackendData(backendBoards) {
+        const boards = [];
+        const lists = {};
+        const cards = {};
       
-        for (const board of boardsFromBackend) {
-          const listMap = new Map();
+        backendBoards.forEach(board => {
+          boards.push({
+            id: board.id,
+            name: board.name || '',
+          });
       
-          for (const list of board.lists) {
-            const cardMap = new Map();
-      
-            for (const card of list.cards) {
-              cardMap.set(card.id, {
+          lists[board.id] = board.lists.map(list => {
+            const cardIds = list.cards.map(card => {
+              cards[card.id] = {
                 id: card.id,
                 title: card.title,
-                description: card.description,
-                position: card.position,
-              });
-            }
+                description: card.description || '',
+                position: card.position, // optional, if you want to keep ordering info
+              };
+              return card.id;
+            });
       
-            listMap.set(list.id, {
+            return {
               id: list.id,
               title: list.title,
-              position: list.position,
-              cards: cardMap,
-            });
-          }
-          
-          boards.set(board.id, {
-            id: board.id,
-            name: board.name,
-            lists: listMap,
+              cardIds: cardIds,
+              position: list.position, // optional
+            };
           });
-        }
-        return boards;
-      };
+        });
+      
+        return { boards, lists, cards };
+      }
       
     const loadData=async ()=>
     {
@@ -62,8 +62,7 @@ export default function Dashboard()
             if(res.status===200)
                 {
                     const data=await res.json()
-                    console.log(data)
-                    setBoards(transformNestedBoardData(data.boards))
+                    setBoardsStore(transformBackendData(data.boards))
                     setLoading(false)
                 }
                 else if(res.status===401)
@@ -87,34 +86,7 @@ export default function Dashboard()
         
         },[])
 
-    const handleCreateProject = () => 
-    {
-        fetch("http://localhost:8000/boards/create", {
-            body: JSON.stringify({
-                name: projectName
-            }),
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
-        })
-        .then((res)=>{
-            if(res.status===200)
-            {
-                createProjectRef.current.click()
-                return res.json()
-            }
-            navigate("/authentication")
-            
-        })
-        .then((data)=>
-        {
-            console.log(data)
-            setBoards((prevBoards)=>[...prevBoards,{id:data.boardId,name:projectName,lists:[]}])
-            setProjectName("")
-        })
-    }
+    
     if(Loading) {
         return (
             <div className='flex justify-center items-center h-screen'>
@@ -131,12 +103,7 @@ export default function Dashboard()
                             <div className="modal-content flex flex-col gap-5">
                                 <label htmlFor="modal-3" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" ref={createProjectRef} >✕</label>
                                 {/* <!-- Put modal content here --> */}
-                                <div className='p-6'>
-                                    <p className='text-sm font-bold'>Create New Project</p>
-                                    <input className="input input-sm input-primary rounded-sm mt-2" placeholder="Project Name" value={projectName} onChange={(e)=>{setProjectName(e.target.value)}} />
-                                    <button className='btn btn-primary btn-sm w-full rounded-sm mt-2' onClick={handleCreateProject}>Create Project</button>
-                                </div>
-                                
+                                <AddBoard createProjectRef={createProjectRef}/>
                             </div>
                         </div>
     </div>
@@ -151,9 +118,7 @@ export default function Dashboard()
                 <div className="drawer-content p-0">
                     <nav className="menu bg-gray-2 rounded-md mt-5">
                         <section className="menu-section">
-                            <ul className="menu-items">
-                                {Array.from(Boards.values()).map((board)=><li key={board.id} onClick={()=>{overlayRef.current.click();navigate(`/dashboard/${board.id}`)}} className="menu-item rounded-none">{board.name}</li>)}
-                            </ul>
+                            <BoardsMenu overlayRef={overlayRef}/>                        
                         </section>
                     </nav>
                     

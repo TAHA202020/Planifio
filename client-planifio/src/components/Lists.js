@@ -1,121 +1,74 @@
-import { Navigate, useParams } from "react-router-dom";
-import BoardsStore from "../Context/BoardsStore";
-import AddList from "./AddList";
+import { useParams, Navigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import AddList from "./AddList"; // Assuming you have an AddList component
+import BoardsStore from "../Context/BoardsStore"; // Assuming useStore is exported from your store
+import React from "react"; // Import React for React.memo
 
 export default function Lists() {
   const { boardId } = useParams();
-  const lists = BoardsStore((state) => state.boards.get(boardId)?.lists);
-  const updateListPosition = BoardsStore((state) => state.updateListPosition);
+  const lists = BoardsStore((state) => state.lists[boardId]);
+  const moveList = BoardsStore((state) => state.moveList); // Function to update list positions in Zustand
 
-  if (!lists) return <Navigate to="/dashboard" />;
+  if (!lists) {
+    return <Navigate to="/dashboard" />;
+  }
 
-  const listArray = Array.from(lists.values()).sort((a, b) => a.position - b.position);
+  console.log("rerendered");
 
-  const handleDragEnd = async (result) => {
-  const { source, destination, type, draggableId } = result;
-  if (!destination) return;
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
-  const { index: sourceIndex, droppableId: sourceDroppableId } = source;
-  const { index: destIndex, droppableId: destDroppableId } = destination;
+  const handleDragEnd = (result) => {
+    const { destination, source } = result;
 
-  const updatedPositionToSend = {
-    BoardId: boardId, // The ID of the board being dragged
-    ListId: draggableId, // The list ID being dragged
-    NewPosition: destIndex, // The new position of the list
+    // If dropped outside or no change in position, do nothing
+    if (!destination || destination.index === source.index) return;
+
+    // Directly mutate the list state for better performance
+    moveList(boardId, destination.index, source.index);
   };
-const oldState = new Map(BoardsStore.getState().boards);
-  updateListPosition(boardId, sourceIndex, destIndex);
-  try {
-      const res = await fetch("http://localhost:8000/boards/validate-drag", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization:`Bearer ${localStorage.getItem("token")}` ,
-        },
-        body: JSON.stringify(updatedPositionToSend),
-      });
-  
-      const data = await res.json();
-  
-      if (data.status === "success") {
-        console.log("Position updated successfully.");
-        // Update the store with the updated boards data from the backend response
-        return ;
-      } else {
-        console.error("Failed to update position:", data.message);
-        // Revert the UI to the old state if the backend validation fails
-        BoardsStore.setState({ boards: oldState });
-      }
-    } catch (error) {
-      console.error("Error while validating position:", error);
-      // Revert the UI to the old state if there's an error in the backend request
-      BoardsStore.setState({ boards: oldState });
-    }
-};
-  
 
   return (
-    <DragDropContext onDragEnd={handleDragEnd}>
-      <Droppable droppableId="board" direction="horizontal" type="LIST">
-        {(provided) => (
-          <div
-            className="flex flex-row items-start justify-start mt-2 overflow-x-auto gap-5 h-full"
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            {listArray.map((list, listIndex) => {
-              const cardArray = Array.from(list.cards.values()).sort(
-                (a, b) => a.position - b.position
-              );
-
-              return (
-                <Draggable draggableId={list.id} index={listIndex} key={list.id}>
+    <div className="flex flex-col gap-4 w-full h-full overflow-y-auto overflow-x-hidden">
+      {/* DragDropContext handles the drag-and-drop process */}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="lists" direction="horizontal">
+          {(provided) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className="flex overflow-x-auto"  // Added space-x-4 for margin between items
+            >
+              {lists.map((list, index) => (
+                <Draggable key={list.id} draggableId={list.id} index={index}>
                   {(provided) => (
-                    <div
-                      className="min-w-[300px] w-[300px] bg-[#232323] rounded-md p-2 flex flex-col gap-2"
+                    <MemoizedList
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                    >
-                      <div className="font-bold text-white mb-2" {...provided.dragHandleProps}>
-                        {list.title}
-                      </div>
-
-                      <Droppable droppableId={list.id} type="CARD">
-                        {(provided) => (
-                          <div
-                            className="flex flex-col gap-2"
-                            ref={provided.innerRef}
-                            {...provided.droppableProps}
-                          >
-                            {cardArray.map((card, cardIndex) => (
-                              <Draggable draggableId={card.id} index={cardIndex} key={card.id}>
-                                {(provided) => (
-                                  <div
-                                    className="bg-[#3a3a3a] text-white rounded px-2 py-1"
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                  >
-                                    {card.title}
-                                  </div>
-                                )}
-                              </Draggable>
-                            ))}
-                            {provided.placeholder}
-                          </div>
-                        )}
-                      </Droppable>
-                    </div>
+                      {...provided.dragHandleProps}
+                      list={list}
+                    />
                   )}
                 </Draggable>
-              );
-            })}
-            {provided.placeholder}
-            <AddList boardId={boardId} />
-          </div>
-        )}
-      </Droppable>
-    </DragDropContext>
+              ))}
+              {provided.placeholder}
+
+              {/* AddList Component (non-draggable, placed in the same row) */}
+              <div className="flex-shrink-0">
+                <AddList boardId={boardId} />
+              </div>
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </div>
   );
 }
+
+// Memoized version of the list item component
+const MemoizedList = React.memo(({ list, ...props }) => {
+  return (
+    <div {...props} className="p-4 border bg-gray-100 rounded-md m-2 text-black">
+      <h3>{list.title}</h3>
+      {/* You can render the cards for each list if needed */}
+      {/* list.cards.map(...) */}
+    </div>
+  );
+});
