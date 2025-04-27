@@ -6,7 +6,6 @@ export default function BoardsMenu({overlayRef}) {
   
   // Correctly using `useStore` to subscribe to the `boards` state
   const boards = BoardsStore((state) => state.boards);
-  console.log(boards); // This should log the boards array
 
   return (
     <ul className="menu-items">

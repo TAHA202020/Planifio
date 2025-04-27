@@ -1,74 +1,104 @@
 import { useParams, Navigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import AddList from "./AddList"; // Assuming you have an AddList component
-import BoardsStore from "../Context/BoardsStore"; // Assuming useStore is exported from your store
-import React from "react"; // Import React for React.memo
+import AddList from "./AddList";
+import BoardsStore from "../Context/BoardsStore";
+import React from "react";
 
 export default function Lists() {
   const { boardId } = useParams();
   const lists = BoardsStore((state) => state.lists[boardId]);
-  const moveList = BoardsStore((state) => state.moveList); // Function to update list positions in Zustand
+  const cards = BoardsStore((state) => state.cards);
+  const moveList = BoardsStore((state) => state.moveList);
+  const moveCard = BoardsStore((state) => state.moveCard);
 
   if (!lists) {
     return <Navigate to="/dashboard" />;
   }
 
-  console.log("rerendered");
-
   const handleDragEnd = (result) => {
-    const { destination, source } = result;
+    console.log("result", result);
+    const { destination, source, draggableId, type } = result;
 
-    // If dropped outside or no change in position, do nothing
-    if (!destination || destination.index === source.index) return;
+    // If dropped outside or no change, do nothing
+    if (!destination || (destination.index === source.index && destination.droppableId === source.droppableId)) {
+      return;
+    }
 
-    // Directly mutate the list state for better performance
-    moveList(boardId, destination.index, source.index);
+    if (type === "LIST") {
+      // Handle list reordering
+      moveList(boardId, destination.index, source.index);
+    } else if (type === "CARD") {
+      // Handle card movement
+      const sourceListId = source.droppableId;
+      const destinationListId = destination.droppableId;
+
+      moveCard(sourceListId, destinationListId, source.index, destination.index,boardId );
+    }
   };
 
   return (
-    <div className="flex flex-col gap-4 w-full h-full overflow-y-auto overflow-x-hidden">
-      {/* DragDropContext handles the drag-and-drop process */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="lists" direction="horizontal">
-          {(provided) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className="flex overflow-x-auto"  // Added space-x-4 for margin between items
-            >
-              {lists.map((list, index) => (
-                <Draggable key={list.id} draggableId={list.id} index={index}>
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <Droppable droppableId="board" direction="horizontal" type="LIST">
+        {(provided) => (
+          <div
+            className="flex flex-row items-start justify-start mt-2 overflow-x-auto h-full"
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+          >
+            {lists.map((list, listIndex) => {
+              return (
+                <Draggable draggableId={list.id} index={listIndex} key={list.id}>
                   {(provided) => (
-                    <MemoizedList
+                    <div
+                      className="min-w-[300px] w-[300px] bg-[#232323] rounded-md p-2 flex flex-col gap-2"
                       ref={provided.innerRef}
                       {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      list={list}
-                    />
+                    >
+                      <div className="font-bold text-white mb-2" {...provided.dragHandleProps}>
+                        {list.title}
+                      </div>
+                      <Droppable droppableId={list.id} type="CARD">
+                        {(provided) => (
+                          <div
+                            className="flex flex-col h-full h-[100px]"
+                            ref={provided.innerRef}
+                            {...provided.droppableProps}
+                          >
+                            {list.cardIds &&
+                              list.cardIds.map((card, cardIndex) => {
+                                card = cards[card];
+                                if (!card) return null;
+                                return (
+                                  <Draggable draggableId={card.id} index={cardIndex} key={card.id}>
+                                  {(provided) => (
+                                    <div
+                                      className="bg-[#3a3a3a] text-white rounded px-2 py-1"
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      {...provided.dragHandleProps}
+                                    >
+                                      {card.title}
+                                    </div>
+                                  )}
+                                </Draggable>
+                                );
+                              })}
+                            {provided.placeholder}
+                          </div>
+                        )}
+                      </Droppable>
+                    </div>
                   )}
                 </Draggable>
-              ))}
-              {provided.placeholder}
-
-              {/* AddList Component (non-draggable, placed in the same row) */}
-              <div className="flex-shrink-0">
-                <AddList boardId={boardId} />
-              </div>
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
-    </div>
+              );
+            })}
+            {provided.placeholder}
+            <AddList boardId={boardId} />
+          </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
 }
 
-// Memoized version of the list item component
-const MemoizedList = React.memo(({ list, ...props }) => {
-  return (
-    <div {...props} className="p-4 border bg-gray-100 rounded-md m-2 text-black">
-      <h3>{list.title}</h3>
-      {/* You can render the cards for each list if needed */}
-      {/* list.cards.map(...) */}
-    </div>
-  );
-});
+
