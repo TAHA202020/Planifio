@@ -2,7 +2,7 @@ import { useState } from "react";
 import BoardsStore from "../Context/BoardsStore";
 import React from "react";
 
-function AddCard({ boardId, listId }) {
+function AddCard({ boardId, listId,listIndex }) {
   const addCard = BoardsStore((state) => state.addCard);
 
   const createCard = () => {
@@ -27,10 +27,9 @@ function AddCard({ boardId, listId }) {
           const newCard = {
             id: data.card.id,
             title: data.card.title,
-            position: data.card.position,
             listId: listId,
           };
-          addCard(boardId, listId, newCard);
+          addCard(boardId, newCard, listIndex);
         } else {
           alert("Error creating card");
         }

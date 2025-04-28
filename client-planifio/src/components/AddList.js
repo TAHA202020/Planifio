@@ -2,7 +2,7 @@ import { useState } from "react";
 import BoardsStore from "../Context/BoardsStore";
 import React from "react";
 function AddList({ boardId }) {
-    const addList = BoardsStore((state) => state.addList);
+    const addList = BoardsStore((state) => state.createList);
     const createList = () => {
         setNewListName(""); // Reset the input value
         fetch("http://localhost:8000/boards/lists/create", {
@@ -22,8 +22,7 @@ function AddList({ boardId }) {
                     const newList = {
                         id: data.list.id,
                         title: data.list.title,
-                        position: data.list.position,
-                        cards: new Map(),
+                        cards: [],
                     };
                     addList(data.list.boardId, newList);
                 } else {

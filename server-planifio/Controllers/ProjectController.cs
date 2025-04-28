@@ -75,16 +75,16 @@ public class BoardsController:ControllerBase
 
         return new JsonResult(new { status = "success", message = "board created successfully", boardId = board.Id });
     }
-    [Authorize]
     [HttpGet("get")]
-    public async Task<JsonResult> GetBoards()
+public async Task<JsonResult> GetBoards()
+{
+    var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+    if (string.IsNullOrEmpty(userEmail))
     {
-        var userEmail = User.FindFirst(ClaimTypes.Email).Value;
-        if (userEmail == null)
-        {
-            return new JsonResult(new { status = "error", message = "User email not found" });
-        }
-        var boards = await _context.Boards
+        return new JsonResult(new { status = "error", message = "User email not found" });
+    }
+
+    var boards = await _context.Boards
         .Where(b => b.UserEmail == userEmail)
         .Select(b => new {
             b.Id,
@@ -94,22 +94,19 @@ public class BoardsController:ControllerBase
                 .Select(l => new {
                     l.Id,
                     l.Title,
-                    l.Position,
                     Cards = l.Cards
                         .OrderBy(c => c.Position)
                         .Select(c => new {
                             c.Id,
                             c.Title,
-                            c.Description,
-                            c.Position
+                            c.Description
                         }).ToList()
                 }).ToList()
         })
         .ToListAsync();
 
-
-        return new JsonResult(new { status = "success", boards });
-    }
+    return new JsonResult(new { status = "success", boards });
+}
     public async Task<int> GetLastPositionWithinBoard(Guid boardId)
     {
         var board = await _context.Boards
@@ -128,7 +125,7 @@ public class BoardsController:ControllerBase
 
         return lastPosition;
     }
-    [HttpPost("validate-drag")]
+    [HttpPost("list/validate-drag")]
 public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPositionDto updateListPositionDto)
 {
     var listId = updateListPositionDto.ListId;
@@ -211,7 +208,6 @@ public async Task<JsonResult> CreateCard([FromBody] Card card)
         _context.Cards.Add(card);
         
         await _context.SaveChangesAsync();
-        Console.WriteLine("--------------------------------------------------------------"+card.Id);
         return new JsonResult(new
         {
             status = "success",
@@ -229,6 +225,86 @@ public async Task<JsonResult> CreateCard([FromBody] Card card)
         return new JsonResult(new { status = "error", message = ex.Message });
     }
 }
+[Authorize]
+[HttpPost("cards/move")]
+public async Task<JsonResult> MoveCard([FromBody] MoveCardDto dto)
+{
+    try
+    {
+        if (dto.BoardId == Guid.Empty || dto.SourceListId == Guid.Empty || dto.DestinationListId == Guid.Empty)
+        {
+            return new JsonResult(new { status = "error", message = "Invalid input data" });
+        }
+
+        var board = await _context.Boards
+            .Include(b => b.Lists)
+                .ThenInclude(l => l.Cards)
+            .FirstOrDefaultAsync(b => b.Id == dto.BoardId);
+
+        if (board == null)
+        {
+            return new JsonResult(new { status = "error", message = "Board not found" });
+        }
+
+        var sourceList = board.Lists.FirstOrDefault(l => l.Id == dto.SourceListId);
+        var destinationList = board.Lists.FirstOrDefault(l => l.Id == dto.DestinationListId);
+
+        if (sourceList == null || destinationList == null)
+        {
+            return new JsonResult(new { status = "error", message = "Source or destination list not found" });
+        }
+
+        if (dto.SourceIndex < 0 || dto.SourceIndex >= sourceList.Cards.Count)
+        {
+            return new JsonResult(new { status = "error", message = "Invalid source index" });
+        }
+
+        var cardToMove = sourceList.Cards.OrderBy(c => c.Position).ToList()[dto.SourceIndex];
+
+        // Remove from source
+        sourceList.Cards.Remove(cardToMove);
+
+        // Insert into destination
+        var destinationCardsOrdered = destinationList.Cards.OrderBy(c => c.Position).ToList();
+        if (dto.DestinationIndex < 0) dto.DestinationIndex = 0;
+        if (dto.DestinationIndex > destinationCardsOrdered.Count) dto.DestinationIndex = destinationCardsOrdered.Count;
+        destinationCardsOrdered.Insert(dto.DestinationIndex, cardToMove);
+
+        // Update list IDs
+        cardToMove.ListId = destinationList.Id;
+
+        // Reassign positions cleanly
+        for (int i = 0; i < destinationCardsOrdered.Count; i++)
+        {
+            destinationCardsOrdered[i].Position = i;
+        }
+
+        if (sourceList.Id == destinationList.Id)
+        {
+            // If same list, update source positions too (destinationCardsOrdered already includes the change)
+            sourceList.Cards = destinationCardsOrdered;
+        }
+        else
+        {
+            // If different lists, update source list separately
+            var newSourceCardsOrdered = sourceList.Cards.OrderBy(c => c.Position).ToList();
+            for (int i = 0; i < newSourceCardsOrdered.Count; i++)
+            {
+                newSourceCardsOrdered[i].Position = i;
+            }
+            sourceList.Cards = newSourceCardsOrdered;
+            destinationList.Cards = destinationCardsOrdered;
+        }
+
+        await _context.SaveChangesAsync();
+
+        return new JsonResult(new { status = "success", message = "Card moved successfully" });
+    }
+    catch (Exception ex)
+    {
+        return new JsonResult(new { status = "error", message = $"Error moving card: {ex.Message}" });
+    }
+}
 
 }
 
@@ -238,4 +314,12 @@ public class UpdateListPositionDto
 
     public Guid BoardId { get; set; } // Board ID to which the list belongs
     public int NewPosition { get; set; } // New position of the list
+}
+public class MoveCardDto
+{
+    public Guid BoardId { get; set; }
+    public Guid SourceListId { get; set; }
+    public Guid DestinationListId { get; set; }
+    public int SourceIndex { get; set; }
+    public int DestinationIndex { get; set; }
 }

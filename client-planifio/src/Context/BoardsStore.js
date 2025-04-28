@@ -6,7 +6,7 @@ const BoardsStore = create((set) => ({
   cards: {}, // Cards are stored as a dictionary with card ID as key
 
   setBoardsStore: ({ boards, lists, cards }) => {
-    console.log("setBoardsStore", lists);
+    console.log("lists", lists);
     return set(() => ({
       boards,
       lists,
@@ -18,7 +18,20 @@ const BoardsStore = create((set) => ({
     boards: [...state.boards, board],
     lists: { ...state.lists, [board.id]: [] },
   })),
+  createList:(boardId, newList) => set((state) => {
+    const newLists = [...state.lists[boardId]]; // clone the lists array
+    newLists.push(newList); // add the new list
+  
+    return {
+      lists: {
+        ...state.lists,
+        [boardId]: newLists, // updated board lists
+      },
+    };
 
+
+  })
+  ,
   moveList: (boardId, destinationIndex, sourceIndex) => {
     set((state) => {
       const lists = { ...state.lists };
@@ -85,9 +98,24 @@ const BoardsStore = create((set) => ({
     });
   },
 
-  addCard: (card) => set((state) => ({
-    cards: { ...state.cards, [card.id]: card },
-  })),
+  addCard: (boardId, newCard, listIndex) => set((state) => {
+    const newLists = [...state.lists[boardId]]; // clone the lists array
+    const updatedList = { ...newLists[listIndex] }; // clone the specific list
+    updatedList.cardIds = [...updatedList.cardIds, newCard.id]; // clone + add card id
+    newLists[listIndex] = updatedList; // replace list with updated one
+  
+    return {
+      lists: {
+        ...state.lists,
+        [boardId]: newLists, // updated board lists
+      },
+      cards: {
+        ...state.cards,
+        [newCard.id]: newCard, // add new card
+      },
+    };
+  }),
+  
 }));
 
 export default BoardsStore;

@@ -14,7 +14,6 @@ export default function Dashboard({})
     const navigate=useNavigate()
     const isAuth = isAuthenticated()
     const setBoardsStore=BoardsStore((state) => state.setBoardsStore)
-    const addBoard=BoardsStore((state) => state.addBoard)
     function transformBackendData(backendBoards) {
         const boards = [];
         const lists = {};
@@ -32,7 +31,6 @@ export default function Dashboard({})
                 id: card.id,
                 title: card.title,
                 description: card.description || '',
-                position: card.position, // optional, if you want to keep ordering info
               };
               return card.id;
             });
@@ -41,7 +39,6 @@ export default function Dashboard({})
               id: list.id,
               title: list.title,
               cardIds: cardIds,
-              position: list.position, // optional
             };
           });
         });
