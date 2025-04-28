@@ -83,6 +83,11 @@ export default function Lists() {
       }
     }
   };
+  const getItemStyle = (style) => ({
+    ...style,
+    transitionProperty: "none",
+    transitionDuration: "0s",
+  });
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
@@ -100,6 +105,7 @@ export default function Lists() {
                     <div
                       className="min-w-[300px] w-[300px] bg-[#232323] rounded-md p-2 flex flex-col mx-[10px]"
                       ref={provided.innerRef}
+                      style={getItemStyle(provided.draggableProps.style)}
                       {...provided.draggableProps}
                     >
                       <div className="font-bold text-white mb-2" {...provided.dragHandleProps}>
@@ -118,10 +124,11 @@ export default function Lists() {
                                 if (!card) return null;
                                 return (
                                   <Draggable draggableId={card.id} index={cardIndex} key={card.id}>
-                                  {(provided) => (
+                                  {(provided , snapshot) => (
                                     <div
                                       className="bg-[#3a3a3a] text-white rounded px-2 py-1"
                                       ref={provided.innerRef}
+                                      style={getItemStyle(provided.draggableProps.style)}
                                       {...provided.draggableProps}
                                       {...provided.dragHandleProps}
                                     >

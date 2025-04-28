@@ -119,7 +119,7 @@ public async Task<JsonResult> GetBoards()
 
         if (board.Lists.Count==0)
         {
-            return 1; 
+            return 0; 
         }
         var lastPosition = board.Lists.Max(l => l.Position)+1;
 
