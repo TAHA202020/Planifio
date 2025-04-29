@@ -15,6 +15,7 @@ export default function Dashboard({})
     const isAuth = isAuthenticated()
     const setBoardsStore=BoardsStore((state) => state.setBoardsStore)
     function transformBackendData(backendBoards) {
+        console.log(backendBoards)
         const boards = [];
         const lists = {};
         const cards = {};

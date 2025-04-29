@@ -22,7 +22,7 @@ function AddList({ boardId }) {
                     const newList = {
                         id: data.list.id,
                         title: data.list.title,
-                        cards: [],
+                        cardIds: [],
                     };
                     addList(data.list.boardId, newList);
                 } else {
