@@ -42,11 +42,12 @@ export default function Card({ title, cardId, cardIndex, description}) {
     <>
       <input className="modal-state" id={modalId} type="checkbox" />
       <div className="modal ">
-        <label className="modal-overlay" htmlFor={modalId}></label>
+        <label className="modal-overlay" htmlFor={modalId} onClick={()=>{setIsEditing(false);setHtml(description)}}></label>
         <div className="modal-content flex flex-col gap-5 w-[50vw]">
           <label
             htmlFor={modalId}
             className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            onClick={()=>{setIsEditing(false);setHtml(description)}}
           >
             ✕
           </label>
