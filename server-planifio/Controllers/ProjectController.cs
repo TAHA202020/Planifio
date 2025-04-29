@@ -305,7 +305,34 @@ public async Task<JsonResult> MoveCard([FromBody] MoveCardDto dto)
         return new JsonResult(new { status = "error", message = $"Error moving card: {ex.Message}" });
     }
 }
+[Authorize]
+[HttpPost("edit/card/description")]
+public async Task<JsonResult> EditCardDescription([FromBody] Card card)
+{
+    try
+    {
+        if (card == null || card.Id == Guid.Empty || string.IsNullOrEmpty(card.Description))
+        {
+            return new JsonResult(new { status = "error", message = "Invalid card data" });
+        }
 
+        var existingCard = await _context.Cards.FindAsync(card.Id);
+        if (existingCard == null)
+        {
+            return new JsonResult(new { status = "error", message = "Card not found" });
+        }
+
+        existingCard.Description = card.Description;
+        await _context.SaveChangesAsync();
+
+        return new JsonResult(new { status = "success", message = "Card description updated successfully" });
+    }
+    catch (Exception ex)
+    {
+        return new JsonResult(new { status = "error", message = ex.Message });
+    }
+
+}
 }
 
 public class UpdateListPositionDto

@@ -4,6 +4,7 @@ import AddList from "./AddList";
 import AddCard from "./AddCard";
 import BoardsStore from "../Context/BoardsStore";
 import React from "react";
+import Card from "./Card";
 
 export default function Lists() {
   const { boardId } = useParams();
@@ -74,7 +75,6 @@ export default function Lists() {
           moveCard(destinationListId, sourceListId, destination.index, source.index,boardId );
         }
         const data = await response.json();
-        console.log("Move card response", data);
         // Server accepted, nothing to do
       } catch (error) {
         console.error("Move card failed, reverting", error);
@@ -123,19 +123,7 @@ export default function Lists() {
                                 card = cards[card];
                                 if (!card) return null;
                                 return (
-                                  <Draggable draggableId={card.id} index={cardIndex} key={card.id}>
-                                  {(provided , snapshot) => (
-                                    <div
-                                      className="bg-[#3a3a3a] text-white rounded px-2 py-1"
-                                      ref={provided.innerRef}
-                                      style={getItemStyle(provided.draggableProps.style)}
-                                      {...provided.draggableProps}
-                                      {...provided.dragHandleProps}
-                                    >
-                                      {card.title}
-                                    </div>
-                                  )}
-                                </Draggable>
+                                  <Card title={card.title} cardId={card.id} cardIndex={cardIndex} key={card.id}  description={card.description}/>
                                 );
                               })}
                             {provided.placeholder}
