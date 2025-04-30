@@ -42,7 +42,7 @@ function AddCard({ boardId, listId,listIndex }) {
     <div className="flex flex-row items-center gap-2 mt-2">
       <input
         className="input input-sm rounded-sm"
-        placeholder="Card name"
+        placeholder="Ajouter une autre carte"
         value={newCardName}
         onChange={(e) => setNewCardName(e.target.value)}
       />

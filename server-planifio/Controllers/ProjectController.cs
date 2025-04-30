@@ -99,7 +99,8 @@ public async Task<JsonResult> GetBoards()
                         .Select(c => new {
                             c.Id,
                             c.Title,
-                            c.Description
+                            c.Description,
+                            c.DueTime,
                         }).ToList()
                 }).ToList()
         })
@@ -332,6 +333,33 @@ public async Task<JsonResult> EditCardDescription([FromBody] Card card)
         return new JsonResult(new { status = "error", message = ex.Message });
     }
 
+}
+[Authorize]
+[HttpPost("edit/card/due-date")]
+public async Task<JsonResult> EditCardDueDate([FromBody] Card card)
+{
+    try
+    {
+        if (card == null || card.Id == Guid.Empty || card.DueTime == null)
+        {
+            return new JsonResult(new { status = "error", message = "Invalid card data" });
+        }
+
+        var existingCard = await _context.Cards.FindAsync(card.Id);
+        if (existingCard == null)
+        {
+            return new JsonResult(new { status = "error", message = "Card not found" });
+        }
+
+        existingCard.DueTime = card.DueTime;
+        await _context.SaveChangesAsync();
+
+        return new JsonResult(new { status = "success", message = "Card due date updated successfully" });
+    }
+    catch (Exception ex)
+    {
+        return new JsonResult(new { status = "error", message = ex.Message });
+    }
 }
 }
 

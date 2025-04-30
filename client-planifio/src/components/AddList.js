@@ -34,7 +34,7 @@ const [newListName, setNewListName] = useState("");
 return (<div className="min-w-[300px] w-[300px] flex flex-row items-center justify-start gap-2 p-2 bg-[#232323] rounded-md">
     <input
         className="input input-sm rounded-sm"
-        placeholder="ListName"
+        placeholder="Ajouter une autre liste"
         value={newListName}
         onChange={(e) => setNewListName(e.target.value)}
     />

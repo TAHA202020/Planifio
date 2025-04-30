@@ -123,7 +123,7 @@ export default function Lists() {
                                 card = cards[card];
                                 if (!card) return null;
                                 return (
-                                  <Card title={card.title} cardId={card.id} cardIndex={cardIndex} key={card.id}  description={card.description}/>
+                                  <Card title={card.title} cardId={card.id} cardIndex={cardIndex} key={card.id}  description={card.description} dueDate={card.dueDate}/>
                                 );
                               })}
                             {provided.placeholder}

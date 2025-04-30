@@ -32,6 +32,7 @@ export default function Dashboard({})
                 id: card.id,
                 title: card.title,
                 description: card.description || '',
+                dueDate: card.dueTime || null,
               };
               return card.id;
             });

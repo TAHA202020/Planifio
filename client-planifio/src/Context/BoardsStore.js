@@ -6,6 +6,7 @@ const BoardsStore = create((set) => ({
   cards: {}, // Cards are stored as a dictionary with card ID as key
 
   setBoardsStore: ({ boards, lists, cards }) => {
+    console.log(cards)
     return set(() => ({
       boards,
       lists,
@@ -123,6 +124,15 @@ const BoardsStore = create((set) => ({
       },
     };
   }),
+  editDueDate: (cardId, newDueDate) => set((state) => {
+    const updatedCard = { ...state.cards[cardId], dueDate: newDueDate };
+    return {
+      cards: {
+        ...state.cards,
+        [cardId]: updatedCard,
+      },
+    };
+  })
   
 }));
 

@@ -13,6 +13,8 @@ public class Card
 
     public int Position { get; set; }
 
+    public DateTime? DueTime { get; set; }
+
     [Required]
     public Guid ListId { get; set; }
 
