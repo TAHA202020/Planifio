@@ -1,28 +1,57 @@
 import { useNavigate } from "react-router-dom";
+import { CiViewBoard } from "react-icons/ci";
 import { IoFolderOpen } from "react-icons/io5";
 import BoardsStore from "../Context/BoardsStore"; // Assuming you've exported `useStore` from your Zustand store
 
-export default function BoardsMenu({overlayRef}) {
+export default function BoardsMenu() {
   const navigate = useNavigate();
-  
+
   // Correctly using `useStore` to subscribe to the `boards` state
   const boards = BoardsStore((state) => state.boards);
 
   return (
-    <ul className="menu-items">
-      {boards.map((board) => (
-        <li
-          key={board.id}
-          onClick={() => {
-            navigate(`/dashboard/${board.id}`);
-            overlayRef.current.click(); // Close the overlay when a board is clicked
-          }}
-          className="menu-item rounded-none"
-        >
-          <IoFolderOpen/>
-          {board.name}
-        </li>
-      ))}
-    </ul>
+    <>
+      <input
+        type="checkbox"
+        id="menu-2"
+        className="menu-toggle [&:checked~.menu-item>.menu-icon]:-rotate-90"
+      />
+      <label className="menu-item justify-between rounded-sm" htmlFor="menu-2">
+      
+        <span className="flex items-center justify-start gap-1"><CiViewBoard /> Boards</span>
+        <span className="menu-icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="1.5"
+            className="w-4 h-4 stroke-content3"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8.25 4.5l7.5 7.5-7.5 7.5"
+            />
+          </svg>
+        </span>
+      </label>
+
+      <div className="menu-item-collapse">
+        <div className="min-h-0">
+          {boards.map((board) => (
+            <li
+              key={board.id}
+              onClick={() => {
+                navigate(`/dashboard/${board.id}`);
+              }}
+              className="menu-item rounded-none w-[250px]"
+            >
+              <IoFolderOpen />
+              {board.name}
+            </li>
+          ))}
+        </div>
+      </div>
+    </>
   );
 }

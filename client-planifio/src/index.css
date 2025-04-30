@@ -30,3 +30,12 @@
   background-color: white !important;
   color: #232323 !important;
  }
+ .logo
+ {
+  padding: 0;
+  background-image: url("./assets/Planifio.png");
+  background-size: cover;
+  height: 50px;
+  background-position: center;
+  width: 150px;
+ }

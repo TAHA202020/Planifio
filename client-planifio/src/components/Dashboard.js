@@ -9,7 +9,6 @@ import AddBoard from './AddBoard'
 export default function Dashboard({}) 
 {
     const createProjectRef=useRef(null)
-    const overlayRef=useRef(null)
     const [Loading, setLoading] = useState(true)
     const navigate=useNavigate()
     const isAuth = isAuthenticated()
@@ -93,7 +92,15 @@ export default function Dashboard({})
             </div>
         )
     }
-    return (<div className='flex flex-col h-[100vh]'>
+    return (
+    <div  className="sticky flex h-screen flex-row overflow-x-hidden ">
+        <aside className="sidebar h-full justify-start">
+        
+        <section className="sidebar-content h-fit min-h-[20rem] overflow-visible">
+            <BoardsMenu/>
+        </section>
+        </aside>
+    <div className='flex flex-col h-[100vh]'>
     <div className='absolute bottom-5 right-5'>
     <label className="btn btn-primary rounded-md" htmlFor="modal-3">Create Project</label>
                         <input className="modal-state" id="modal-3" type="checkbox" />
@@ -101,36 +108,18 @@ export default function Dashboard({})
                             <label className="modal-overlay"></label>
                             <div className="modal-content flex flex-col gap-5">
                                 <label htmlFor="modal-3" className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2" ref={createProjectRef} >✕</label>
-                                {/* <!-- Put modal content here --> */}
                                 <AddBoard createProjectRef={createProjectRef}/>
                             </div>
                         </div>
     </div>
     <div className='px-7 py-3 bg-[#232323] flex justify-between items-center'>
         <div className='flex items-center gap-5'>
-        
-            <input type="checkbox" id="drawer-left" className="drawer-toggle" />
-
-            <label htmlFor="drawer-left" className="btn btn-solid-primary rounded-md">Projects</label>
-            <label className="overlay" htmlFor="drawer-left" ref={overlayRef}></label>
-            <div className="drawer">
-                <div className="drawer-content p-0">
-                    <nav className="menu bg-gray-2 rounded-md mt-5">
-                        <section className="menu-section">
-                            <BoardsMenu overlayRef={overlayRef}/>                        
-                        </section>
-                    </nav>
-                    
-                </div>
-            </div>
-        
-        </div>
-        <div className="avatar avatar-ring-primary bg-zinc-200 avatar-sm ">
-            <img src={user} alt="avatar" />
+            <div className='logo'></div>
         </div>
     </div>
     <div className='flex-auto w-[100vw] p-[10px]'>
         <Outlet/>
+    </div>
     </div>
     </div>)
 }

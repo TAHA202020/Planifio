@@ -164,7 +164,7 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
     </div>
   </div>
 </div>
-          <div class="divider m-0"></div>
+          <div className="divider m-0"></div>
           <div>
             <div className="bg-[#232323] flex items-center justify-between font-bold text-lg  ">
               <div className="flex items-center gap-2">
