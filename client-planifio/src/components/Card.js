@@ -1,8 +1,13 @@
 import { Draggable } from "@hello-pangea/dnd";
 import { useState } from "react";
-import { DefaultEditor } from "react-simple-wysiwyg";
+import Editor, { 
+  BtnBold,BtnLink,BtnRedo,BtnUndo,BtnUnderline,BtnStrikeThrough,
+  BtnItalic,
+  Toolbar
+} from 'react-simple-wysiwyg';
 import { MdOutlineDescription } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
+import { MdOutlineMenuOpen } from "react-icons/md";
 import BoardsStore from "../Context/BoardsStore";
 export default function Card({ title, cardId, cardIndex, description}) {
   const [isEditing, setIsEditing] = useState(false);
@@ -16,6 +21,11 @@ export default function Card({ title, cardId, cardIndex, description}) {
   });
   const handlechangeDescription=(cardId, html)=>{
     const letOldDescription=description;
+    if(html===letOldDescription){
+      setIsEditing(false)
+      return
+    }
+    console.log(html)
     editDescription(cardId, html)
     setIsEditing(false)
     console.log(html)
@@ -51,7 +61,7 @@ export default function Card({ title, cardId, cardIndex, description}) {
           >
             ✕
           </label>
-          <h2 className="text-xl"> {title}</h2>
+          <h2 className="text-xl font-bold"> {title}</h2>
 
           <div>
             <div className="bg-[#232323] flex items-center justify-between font-bold text-lg  ">
@@ -67,10 +77,21 @@ export default function Card({ title, cardId, cardIndex, description}) {
             </div>
             <div dangerouslySetInnerHTML={{ __html: html }}></div>
           </div>{isEditing && (<div className="flex flex-col gap-2">
-          <DefaultEditor
+          <Editor
+          style={{backgroundColor:"#232323"}}
             value={html}
             onChange={(e) => setHtml(e.target.value)}
-          />
+          >
+            <Toolbar>
+              <BtnUndo />
+              <BtnRedo />
+              <BtnUnderline />
+              <BtnStrikeThrough />
+              <BtnBold  />
+              <BtnItalic />
+              <BtnLink />
+            </Toolbar>
+          </Editor>
           <button className="btn btn-solid-success btn-sm rounded-sm" onClick={()=>handlechangeDescription(cardId,html)}> save</button>
           </div>)}
         </div>
@@ -87,8 +108,8 @@ export default function Card({ title, cardId, cardIndex, description}) {
             <div className="bg-[#3a3a3a] text-white rounded px-3 py-3 my-1 flex items-center justify-between">
               <div>{title}</div>
               
-              <label className="btn btn-sm cursor-pointer" htmlFor={modalId}>
-                open
+              <label className="btn btn-solid-default btn-sm cursor-pointer" htmlFor={modalId}>
+                <MdOutlineMenuOpen/>
               </label>
             </div>
           </div>

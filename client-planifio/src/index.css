@@ -8,3 +8,25 @@
   padding: 0;
   box-sizing: border-box;
  }
+ .rsw-editor
+ {
+  border-color: #232323 !important;
+ }
+ .rsw-toolbar
+ {
+  background-color: white !important;
+ }
+ .rsw-btn
+ {
+  background-color: white !important;
+  color: #232323 !important;
+ }
+ .rsw-separator
+ {
+  margin: 0 !important;
+ }
+ .rsw-dd
+ {
+  background-color: white !important;
+  color: #232323 !important;
+ }

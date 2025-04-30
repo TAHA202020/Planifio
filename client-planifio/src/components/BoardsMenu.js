@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { IoFolderOpen } from "react-icons/io5";
 import BoardsStore from "../Context/BoardsStore"; // Assuming you've exported `useStore` from your Zustand store
 
 export default function BoardsMenu({overlayRef}) {
@@ -18,6 +19,7 @@ export default function BoardsMenu({overlayRef}) {
           }}
           className="menu-item rounded-none"
         >
+          <IoFolderOpen/>
           {board.name}
         </li>
       ))}
