@@ -90,6 +90,7 @@ export default function Lists() {
   });
 
   return (
+    <div className="p-2 h-full">
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="board" direction="horizontal" type="LIST" >
         {(provided) => (
@@ -142,6 +143,7 @@ export default function Lists() {
         )}
       </Droppable>
     </DragDropContext>
+    </div>
   );
 }
 

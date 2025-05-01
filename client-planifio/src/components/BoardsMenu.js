@@ -1,9 +1,11 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { CiViewBoard } from "react-icons/ci";
 import { IoFolderOpen } from "react-icons/io5";
+import { FaFolderOpen } from "react-icons/fa6";
 import BoardsStore from "../Context/BoardsStore"; // Assuming you've exported `useStore` from your Zustand store
 
 export default function BoardsMenu() {
+  const { boardId } = useParams();
   const navigate = useNavigate();
 
   // Correctly using `useStore` to subscribe to the `boards` state
@@ -44,9 +46,10 @@ export default function BoardsMenu() {
               onClick={() => {
                 navigate(`/dashboard/${board.id}`);
               }}
-              className="menu-item rounded-none w-[250px]"
+              className="menu-item rounded-none w-[300px]"
             >
-              <IoFolderOpen />
+              {boardId === board.id ? <FaFolderOpen />:<IoFolderOpen />}
+              
               {board.name}
             </li>
           ))}

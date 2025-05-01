@@ -5,6 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 [Route("")]
 public class AuthController : ControllerBase
@@ -105,18 +106,6 @@ public class AuthController : ControllerBase
 
         return new JsonResult(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
     private int generateOtp()
     {

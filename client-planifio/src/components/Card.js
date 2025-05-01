@@ -16,7 +16,8 @@ import { MdOutlineDescription } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
 import { MdOutlineMenuOpen } from "react-icons/md";
 import BoardsStore from "../Context/BoardsStore";
-
+import { GiConfirmed } from "react-icons/gi";
+import { MdOutlineCancel } from "react-icons/md";
 
 
 
@@ -136,13 +137,13 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
             className="btn btn-sm btn-solid-success"
             onClick={()=>handlechangeDueDate(dueDateInputRef.current.value)}
           >
-            Confirm
+            <GiConfirmed/>
           </button>
           <button
             className="btn btn-sm btn-solid-error"
             onClick={() => handlechangeDueDate(null)}
           >
-            remove
+            <MdOutlineCancel/>
           </button>
         </div>
       ) : (
