@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { isAuthenticated } from "../Utils/Auth";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import user from "../assets/user.svg";
 import BoardsStore from "../Context/BoardsStore";
 import BoardsMenu from "./BoardsMenu";
@@ -90,6 +90,10 @@ export default function Dashboard({}) {
       <aside className="sidebar h-full justify-start">
         <section className="sidebar-content h-fit min-h-[20rem] overflow-visible">
           <BoardsMenu />
+          <Link
+              className="menu-item rounded-none w-full"
+              to={"/dashboard/calendar"}
+            >Calendar</Link>
         </section>
         <section class="sidebar-footer h-full justify-end bg-gray-2 pt-2">
           <button className="btn btn-primary rounded-sm" onClick={handleLogout}>
