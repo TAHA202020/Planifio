@@ -9,7 +9,7 @@ export default function Calendar()
 {
     const [currentMonth, setCurrentMonth] = useState(startOfMonth(Date.now()));
     return (
-        
+        <div className="calendar">
 <MonthlyCalendar
   currentMonth={currentMonth}
   onCurrentMonthChange={(newMonth)=>{
@@ -17,8 +17,12 @@ export default function Calendar()
   }}
 >
   <MonthlyNav />
-  <MonthlyBody
+  <MonthlyBody style={{backgroundColor: 'black'}}
     events={[
+      {
+        date: new Date('2025-05-02T20:14:06.089Z'),
+        title: 'Call John'
+      },
       {
         date: new Date('2025-05-02T20:14:06.089Z'),
         title: 'Call John'
@@ -44,5 +48,6 @@ export default function Calendar()
     }}/>
 
   </MonthlyBody>
-</MonthlyCalendar>)
+</MonthlyCalendar>
+</div>)
 }
