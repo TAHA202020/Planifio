@@ -123,7 +123,6 @@ export default function Dashboard({}) {
         </div>
         <div className="px-7 py-3 bg-[#232323] flex justify-between items-center">
           <div className="flex items-center justify-between gap-5 w-full">
-            <div className="logo"></div>
             <p>d,zlkdf</p>
           </div>
         </div>
