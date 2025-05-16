@@ -230,17 +230,15 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
                 {title}
                 {dueDate &&
                   (daysLeft === 1 ? (
-                    <span className="badge badge-xs ml-2 badge-warning">
-                      {">24h left"}
+                    <span className="badge badge-xs ml-2 badge-warning rounded-sm">
+                      {"<24h left"}
                     </span>
                   ) : daysLeft < 1 ? (
-                    <span className="badge badge-xs ml-2  badge-error">
+                    <span className="badge badge-xs ml-2  badge-error rounded-sm">
                       Overdue
                     </span>
                   ) : (
-                    <span className="badge  badge-xs ml-2 badge-secondary">
-                      {daysLeft} days left
-                    </span>
+                    null
                   ))}
               </div>
 

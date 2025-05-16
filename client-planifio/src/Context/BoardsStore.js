@@ -3,14 +3,15 @@ import { create } from 'zustand';
 const BoardsStore = create((set) => ({
   boards: [],
   lists: {},
-  cards: {}, // Cards are stored as a dictionary with card ID as key
+  cards: {},
+  events:{}, // Cards are stored as a dictionary with card ID as key
 
-  setBoardsStore: ({ boards, lists, cards }) => {
-    console.log(cards)
+  setBoardsStore: ({ boards, lists, cards ,events}) => {
     return set(() => ({
       boards,
       lists,
       cards,
+      events,
     }));
   },
 
@@ -103,7 +104,8 @@ const BoardsStore = create((set) => ({
     const updatedList = { ...newLists[listIndex] }; // clone the specific list
     updatedList.cardIds = [...updatedList.cardIds, newCard.id]; // clone + add card id
     newLists[listIndex] = updatedList; // replace list with updated one
-  
+    let newEvents = { ...state.events };
+    newEvents[newCard.id] = { date: newCard.dueDate, title: newCard.title };
     return {
       lists: {
         ...state.lists,
@@ -112,6 +114,10 @@ const BoardsStore = create((set) => ({
       cards: {
         ...state.cards,
         [newCard.id]: newCard, // add new card
+      },
+      events: {
+        ...state.events,
+        [newCard.id]: newEvents[newCard.id], 
       },
     };
   }),
@@ -126,10 +132,15 @@ const BoardsStore = create((set) => ({
   }),
   editDueDate: (cardId, newDueDate) => set((state) => {
     const updatedCard = { ...state.cards[cardId], dueDate: newDueDate };
+    const updatedEvent = { ...state.events[cardId], date: newDueDate };
     return {
       cards: {
         ...state.cards,
         [cardId]: updatedCard,
+      },
+      events: {
+        ...state.events,
+        [cardId]: updatedEvent,
       },
     };
   })

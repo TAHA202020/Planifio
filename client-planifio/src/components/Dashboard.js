@@ -12,10 +12,10 @@ export default function Dashboard({}) {
   const isAuth = isAuthenticated();
   const setBoardsStore = BoardsStore((state) => state.setBoardsStore);
   function transformBackendData(backendBoards) {
-    console.log(backendBoards);
     const boards = [];
     const lists = {};
     const cards = {};
+    const events = {};
 
     backendBoards.forEach((board) => {
       boards.push({
@@ -25,12 +25,23 @@ export default function Dashboard({}) {
 
       lists[board.id] = board.lists.map((list) => {
         const cardIds = list.cards.map((card) => {
-          cards[card.id] = {
+          const cardData = {
             id: card.id,
             title: card.title,
             description: card.description || "",
             dueDate: card.dueTime || null,
           };
+
+          cards[card.id] = cardData;
+
+          if (cardData.dueDate) {
+            events[card.id]={
+              id: card.id,
+              title: card.title,
+              date: cardData.dueDate,
+            };
+          }
+
           return card.id;
         });
 
@@ -41,9 +52,9 @@ export default function Dashboard({}) {
         };
       });
     });
-
-    return { boards, lists, cards };
+    return { boards, lists, cards, events };
   }
+
 
   const loadData = async () => {
     try {
@@ -95,7 +106,7 @@ export default function Dashboard({}) {
               to={"/dashboard/calendar"}
             >Calendar</Link>
         </section>
-        <section class="sidebar-footer h-full justify-end bg-gray-2 pt-2">
+        <section className="sidebar-footer h-full justify-end bg-gray-2 pt-2">
           <button className="btn btn-primary rounded-sm" onClick={handleLogout}>
             Logout
           </button>
