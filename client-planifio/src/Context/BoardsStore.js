@@ -130,9 +130,9 @@ const BoardsStore = create((set) => ({
       },
     };
   }),
-  editDueDate: (cardId, newDueDate) => set((state) => {
+  editDueDate: (cardId, newDueDate, boardId,listTitle) => set((state) => {
     const updatedCard = { ...state.cards[cardId], dueDate: newDueDate };
-    const updatedEvent = { ...state.events[cardId], date: newDueDate };
+    const updatedEvent = { id:cardId,title:updatedCard.title,boardId:boardId,listTitle:listTitle, date: newDueDate };
     return {
       cards: {
         ...state.cards,

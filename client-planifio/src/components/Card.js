@@ -21,7 +21,7 @@ import { MdOutlineCancel } from "react-icons/md";
 
 
 
-function Card({ title, cardId, cardIndex, description, dueDate }) {
+function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTitle}) {
   const dueDateInputRef = useRef(null);
   const daysLeft = Math.ceil(
     (new Date(dueDate) - Date.now()) / (1000 * 60 * 60 * 24)
@@ -46,7 +46,7 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
       seteditingDate(false);
       return;
     }
-    editDueDate(cardId, newDate);
+    editDueDate(cardId, newDate ,boardId,listTitle);
     seteditingDate(false);
     fetch("http://localhost:8000/boards/edit/card/due-date", {
       method: "POST",

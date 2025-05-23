@@ -151,7 +151,7 @@ export default function Lists() {
                                 card = cards[card];
                                 if (!card) return null;
                                 return (
-                                  <Card title={card.title} cardId={card.id} cardIndex={cardIndex} key={card.id}  description={card.description} dueDate={card.dueDate}/>
+                                  <Card title={card.title} cardId={card.id} cardIndex={cardIndex} key={card.id}  description={card.description} dueDate={card.dueDate} boardId={boardId} listTitle={list.title}/>
                                 );
                               })}
                             {provided.placeholder}
