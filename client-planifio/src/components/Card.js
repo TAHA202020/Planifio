@@ -14,7 +14,7 @@ import Editor, {
 } from "react-simple-wysiwyg";
 import { MdOutlineDescription } from "react-icons/md";
 import { FaRegEdit } from "react-icons/fa";
-import { MdOutlineMenuOpen } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
 import BoardsStore from "../Context/BoardsStore";
 import { GiConfirmed } from "react-icons/gi";
 import { MdOutlineCancel } from "react-icons/md";
@@ -96,10 +96,32 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
         console.error("Error:", error);
       });
   };
+  const deleteCard=(cardId)=>{
+    BoardsStore.getState().deleteCard(cardId);
+    fetch("http://localhost:8000/boards/delete/card", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        Id: cardId,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Success:", data);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  }
+
+
   return (
     <>
       <input className="modal-state" id={modalId} type="checkbox" />
-      <div className="modal ">
+      <div className="modal  ">
         <label
           className="modal-overlay"
           htmlFor={modalId}
@@ -108,7 +130,7 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
             setHtml(description);
           }}
         ></label>
-        <div className="modal-content flex flex-col gap-5 w-[50vw]">
+        <div className="modal-content flex flex-col gap-5 w-[50vw] h-[75vh] overflow-y-auto relative rounded-sm">
           <label
             htmlFor={modalId}
             className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
@@ -212,8 +234,12 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
                 {" "}
                 save
               </button>
+
+              
             </div>
           )}
+          <div className="absolute bottom-2 right-2 flex justify-end "> <button className="btn btn-solid-error rounded-sm" onClick={()=>deleteCard(cardId)}>delete</button></div>
+          
         </div>
       </div>
 
@@ -226,7 +252,7 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
             {...provided.dragHandleProps}
           >
             <div className="bg-[#3a3a3a] text-white rounded px-3 py-3 my-1 flex items-center justify-between">
-              <div>
+              <div className="text-ellipsis">
                 {title}
                 {dueDate &&
                   (daysLeft === 1 ? (
@@ -241,18 +267,20 @@ function Card({ title, cardId, cardIndex, description, dueDate }) {
                     null
                   ))}
               </div>
-
               <label
-                className="btn btn-solid-default btn-sm cursor-pointer"
+                className="btn btn-solid-default btn-sm cursor-pointer edit-card"
                 htmlFor={modalId}
               >
-                <MdOutlineMenuOpen />
+                <FaRegEdit />
               </label>
+              
             </div>
+            
           </div>
         )}
       </Draggable>
     </>
+    
   );
 }
 

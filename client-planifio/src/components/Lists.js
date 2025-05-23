@@ -3,8 +3,9 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddList from "./AddList";
 import AddCard from "./AddCard";
 import BoardsStore from "../Context/BoardsStore";
-import React from "react";
 import Card from "./Card";
+import { HiOutlineDotsVertical } from "react-icons/hi";
+import ListDropdown from "./ListDropdown";
 
 export default function Lists() {
   const { boardId } = useParams();
@@ -88,9 +89,34 @@ export default function Lists() {
     transitionProperty: "none",
     transitionDuration: "0s",
   });
-
+  const deleteList = (boardId,listId) => {
+    
+    fetch("http://localhost:8000/boards/list/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        Id: listId,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "success") {
+          console.log("List deleted successfully");
+        } else {
+          console.error("Failed to delete list");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting list:", error);
+      });
+      BoardsStore.getState().deleteList(boardId, listId);
+  }
   return (
     <div className="p-2 h-full">
+      
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="board" direction="horizontal" type="LIST" >
         {(provided) => (
@@ -109,8 +135,9 @@ export default function Lists() {
                       style={getItemStyle(provided.draggableProps.style)}
                       {...provided.draggableProps}
                     >
-                      <div className="font-bold text-white mb-2" {...provided.dragHandleProps}>
-                        {list.title}
+                      <div className="flex justify-between" {...provided.dragHandleProps}>
+                        <h1 className="font-bold text-white mb-2">{list.title}</h1>
+                        <ListDropdown onDelete={() => {deleteList(boardId,list.id)}} />
                       </div>
                       <Droppable droppableId={list.id} type="CARD">
                         {(provided) => (

@@ -1,5 +1,4 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { CiViewBoard } from "react-icons/ci";
 import { IoFolderOpen } from "react-icons/io5";
 import { FaFolderOpen } from "react-icons/fa6";
 import BoardsStore from "../Context/BoardsStore"; // Assuming you've exported `useStore` from your Zustand store
@@ -20,7 +19,7 @@ export default function BoardsMenu() {
       />
       <label className="menu-item justify-between rounded-sm" htmlFor="menu-2">
       
-        <span className="flex items-center justify-start gap-1"><CiViewBoard /> Boards</span>
+        <span className="flex items-center justify-start gap-1 font-semibold"> Boards</span>
         <span className="menu-icon">
           <svg
             xmlns="http://www.w3.org/2000/svg"

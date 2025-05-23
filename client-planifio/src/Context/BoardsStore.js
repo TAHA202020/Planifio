@@ -143,7 +143,38 @@ const BoardsStore = create((set) => ({
         [cardId]: updatedEvent,
       },
     };
-  })
+  }),
+  deleteCard: (cardId) => set((state) => {
+    const updatedCards = { ...state.cards };
+    delete updatedCards[cardId];
+    const updatedEvents = { ...state.events };
+    delete updatedEvents[cardId];
+    return {
+      cards: updatedCards,
+      events: updatedEvents,
+    };
+  }),
+  deleteList: (boardId, listId) => set((state) => {
+    const updatedLists = { ...state.lists };
+    const newLists = updatedLists[boardId].filter((list) => list.id !== listId);
+    delete updatedLists[listId];
+    //remove cards and events of the list too 
+    const cardsToDelete = updatedLists[boardId].find((list) => list.id === listId).cardIds;
+    const updatedCards = { ...state.cards };
+    const updatedEvents = { ...state.events };
+    cardsToDelete.forEach((cardId) => {
+      delete updatedCards[cardId];
+      delete updatedEvents[cardId];
+    });
+    return {
+      lists: {
+        ...updatedLists,
+        [boardId]: newLists,
+      },
+      cards: updatedCards,
+      events: updatedEvents,
+    };
+  }),
   
 }));
 
