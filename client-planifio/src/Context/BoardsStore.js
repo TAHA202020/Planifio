@@ -131,17 +131,19 @@ const BoardsStore = create((set) => ({
     };
   }),
   editDueDate: (cardId, newDueDate, boardId,listTitle) => set((state) => {
-    const updatedCard = { ...state.cards[cardId], dueDate: newDueDate };
-    const updatedEvent = { id:cardId,title:updatedCard.title,boardId:boardId,listTitle:listTitle, date: newDueDate };
+    const updatedCard = { ...state.cards[cardId], dueDate: newDueDate }
+    const eventsCopy={...state.events}
+    if(newDueDate==null && eventsCopy[cardId] !==null)
+      delete eventsCopy[cardId]
+    else{
+      eventsCopy[cardId]={ id:cardId,title:updatedCard.title,boardId:boardId,listTitle:listTitle, date: newDueDate }
+    }
     return {
       cards: {
         ...state.cards,
         [cardId]: updatedCard,
       },
-      events: {
-        ...state.events,
-        [cardId]: updatedEvent,
-      },
+      events: eventsCopy,
     };
   }),
   deleteCard: (cardId) => set((state) => {
