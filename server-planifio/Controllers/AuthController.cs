@@ -5,15 +5,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
-
+using System.Security.Cryptography;
 [Route("")]
 public class AuthController : ControllerBase
 {
     private readonly PlanifioDbContext _context;
     private readonly IConfiguration _config;
 
-    public AuthController(PlanifioDbContext context,IConfiguration config)
+    public AuthController(PlanifioDbContext context, IConfiguration config)
     {
         _context = context;
         _config = config;
@@ -23,69 +22,87 @@ public class AuthController : ControllerBase
     [HttpPost("auth/request-otp")]
     public async Task<JsonResult> Index([FromBody] User user)
     {
-        User existingUser=await _context.Users.FindAsync(user.Email);
-        if(existingUser==null)
+        User existingUser = await _context.Users.FindAsync(user.Email);
+        if (existingUser == null)
         {
-            int otp=generateOtp();
-            User newUser = new User {Email = user.Email,otp = otp,otp_expiration = DateTime.UtcNow.AddMinutes(3)};
+            int otp = generateOtp();
+            User newUser = new User { Email = user.Email, otp = otp, otp_expiration = DateTime.UtcNow.AddMinutes(3) };
             _context.Users.Add(newUser);
             await SendOtpToEmailAsync(user.Email, otp);
             await _context.SaveChangesAsync();
 
-            return new JsonResult(new {status="success",message="User Created and OTP Sent to the Email"});;
+            return new JsonResult(new { status = "success", message = "User Created and OTP Sent to the Email" });
         }
-        if(existingUser.otp==null)
+        if (existingUser.otp == null)
         {
-            int otp=generateOtp();
-            existingUser.otp=otp;
-            existingUser.otp_expiration=DateTime.UtcNow.AddMinutes(3);
+            int otp = generateOtp();
+            existingUser.otp = otp;
+            existingUser.otp_expiration = DateTime.UtcNow.AddMinutes(3);
             await SendOtpToEmailAsync(existingUser.Email, otp);
             await _context.SaveChangesAsync();
-            return new JsonResult(new {status="success",message="OTP sent to Email"});
+            return new JsonResult(new { status = "success", message = "OTP sent to Email" });
         }
         if (existingUser.otp_expiration != null && isOtpExpired(existingUser.otp_expiration.Value))
         {
-            int otp=generateOtp();
-            existingUser.otp=otp;
-            existingUser.otp_expiration=DateTime.UtcNow.AddMinutes(3);
+            int otp = generateOtp();
+            existingUser.otp = otp;
+            existingUser.otp_expiration = DateTime.UtcNow.AddMinutes(3);
             await SendOtpToEmailAsync(existingUser.Email, otp);
             await _context.SaveChangesAsync();
-            return new JsonResult(new {status="success",message="OTP sent to Email"});
+            return new JsonResult(new { status = "success", message = "OTP sent to Email" });
         }
-        return new JsonResult(new {status="success",message="OTP Already sent to Email"});
-        
+        return new JsonResult(new { status = "success", message = "OTP Already sent to Email" });
+
     }
     [HttpPost("auth/validate-otp")]
     public async Task<JsonResult> ValidateOtp([FromBody] User user)
     {
-        User existingUser=await _context.Users.FindAsync(user.Email);
-        if(existingUser==null)
+        var context = HttpContext;
+        User existingUser = await _context.Users.FindAsync(user.Email);
+        if (existingUser == null)
         {
-            return new JsonResult(new {status="error",message="User not found"});
+            return new JsonResult(new { status = "error", message = "User not found" });
         }
-        if(existingUser.otp==null)
+        if (existingUser.otp == null)
         {
-            return new JsonResult(new {status="error",message="OTP not sent"});
+            return new JsonResult(new { status = "error", message = "OTP not sent" });
         }
-        if(isOtpExpired((DateTime)existingUser.otp_expiration))
+        if (isOtpExpired((DateTime)existingUser.otp_expiration))
         {
-            return new JsonResult(new {status="error",message="OTP expired"});
+            return new JsonResult(new { status = "error", message = "OTP expired" });
         }
-        if(validateOtp((int)existingUser.otp,(int)user.otp))
+        if (validateOtp((int)existingUser.otp, (int)user.otp))
         {
-            existingUser.otp=null;
-            existingUser.otp_expiration=null;
+            existingUser.otp = null;
+            existingUser.otp_expiration = null;
+            string refreshToken = GenerateSecureRefreshToken();
+            existingUser.RefreshToken = refreshToken;
+            existingUser.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
-            return createJwtToken(user.Email);
+            context.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+            });
+            return createJwtToken(user.Email, context);
         }
         else
         {
-            return new JsonResult(new {status="error",message="Invalid OTP"});
+            return new JsonResult(new { status = "error", message = "Invalid OTP" });
+        }
+    }
+    private string GenerateSecureRefreshToken()
+    {
+        var randomBytes = new byte[64];
+        using (var rng = RandomNumberGenerator.Create())
+        {
+            rng.GetBytes(randomBytes);
+            return Convert.ToBase64String(randomBytes);
         }
     }
 
-
-    private JsonResult createJwtToken(string Email){
+    private JsonResult createJwtToken(string Email, HttpContext context)
+    {
 
         var claims = new[]
         {
@@ -93,19 +110,20 @@ public class AuthController : ControllerBase
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:SecretKey"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
-            issuer: _config["JwtSettings:Issuer"],
-            audience: _config["JwtSettings:Audience"],
+            issuer: _config["Jwt:Issuer"],
+            audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddHours(24),
+            expires: DateTime.Now.AddMinutes(10),
             signingCredentials: creds
         );
-
-        return new JsonResult(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
-}
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+        context.Response.Cookies.Append("access_token", tokenString, new CookieOptions { HttpOnly = true });
+        return new JsonResult(new { token = tokenString });
+    }
 
     private int generateOtp()
     {
@@ -131,35 +149,60 @@ public class AuthController : ControllerBase
     }
     //TODO:Send OTP to Email
     private async Task SendOtpToEmailAsync(string Email, int otp)
-{
-    string smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
-    string smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
-    try
     {
-        var message = new MimeMessage();
-        message.From.Add(new MailboxAddress("Planifio", smtpUsername));
-        message.To.Add(new MailboxAddress("", Email));
-        message.Subject = "Your OTP Code";
-
-        var bodyBuilder = new BodyBuilder
+        string smtpUsername = Environment.GetEnvironmentVariable("SMTP_USERNAME");
+        string smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+        try
         {
-            TextBody = $"Your OTP code is {otp}. Please use this code to complete your verification."
-        };
-        message.Body = bodyBuilder.ToMessageBody();
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("Planifio", smtpUsername));
+            message.To.Add(new MailboxAddress("", Email));
+            message.Subject = "Your OTP Code";
 
-        using (var client = new SmtpClient())
-        {
-            await client.ConnectAsync("smtp.gmail.com", 587, false);
-            await client.AuthenticateAsync(smtpUsername, smtpPassword);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            var bodyBuilder = new BodyBuilder
+            {
+                TextBody = $"Your OTP code is {otp}. Please use this code to complete your verification."
+            };
+            message.Body = bodyBuilder.ToMessageBody();
+
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync("smtp.gmail.com", 587, false);
+                await client.AuthenticateAsync(smtpUsername, smtpPassword);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
+
+            Console.WriteLine("OTP sent to Email.");
         }
-
-        Console.WriteLine("OTP sent to Email.");
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to send OTP: {ex.Message}");
+        }
     }
-    catch (Exception ex)
+    [HttpPost("auth/logout")]
+    public JsonResult Logout()
     {
-        Console.WriteLine($"Failed to send OTP: {ex.Message}");
+        HttpContext.Request.Cookies.TryGetValue("access_token", out string accessToken);
+        //get Email from access token
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var jwtToken = tokenHandler.ReadJwtToken(accessToken);
+        string userEmail = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+        
+        Console.WriteLine("User Email: --------------------------------------------" + userEmail);
+        if (userEmail != null)
+        {
+            var user = _context.Users.SingleOrDefault(u => u.Email == userEmail);
+            if (user != null)
+            {
+                user.RefreshToken = null;
+                user.RefreshTokenExpiryTime = null;
+                _context.SaveChanges();
+            }
+        }
+        var context = HttpContext;
+        context.Response.Cookies.Delete("access_token");
+        context.Response.Cookies.Delete("refresh_token");
+        return new JsonResult(new { status = "success", message = "Logged out successfully" });
     }
-}
 } 

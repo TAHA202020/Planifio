@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { isAuthenticated } from "../Utils/Auth";
+import BoardsStore from "../Context/BoardsStore";
 
 export default function Authentication() {
-    const Authenticated=isAuthenticated();
+    const Authenticated=BoardsStore((state) => state.isAuthenticated);
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState();
@@ -20,6 +21,7 @@ export default function Authentication() {
                         "Content-Type": "application/json",
                     },
                     body: JSON.stringify({ email }),
+                    credentials: "include",
                 }).then(res=>res.json()).then(data=>{
                     console.log(data);
                     if(data.status==="success"){
@@ -40,8 +42,9 @@ export default function Authentication() {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({ email,otp:Number(otp) }),
+            credentials: "include",
         }).then(res=>res.json()).then(data=>{
-            localStorage.setItem("token",data.token);
+            BoardsStore.getState().Authenticated(true);
             navigate("/dashboard")
         })
         .catch(error => {
@@ -52,7 +55,7 @@ export default function Authentication() {
         if(Authenticated){
             navigate("/dashboard")
         }
-    }  )
+    } , []);
     return (<div className="w-full h-[100vh] flex flex-col items-center justify-center">
         <div className="card p-10">
             <div className="card-header justify-center">Login/Register</div>

@@ -31,7 +31,6 @@ export default function Lists() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
 
         },
         body: JSON.stringify({
@@ -39,6 +38,7 @@ export default function Lists() {
           ListId: draggableId,
           NewPosition: destination.index,
         }),
+        credentials: "include",
       })
       .then((response) => response.json()).then((data) => {
         if(data.status!="success")
@@ -59,7 +59,6 @@ export default function Lists() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({
             boardId,
@@ -68,6 +67,7 @@ export default function Lists() {
             sourceIndex: source.index,
             destinationIndex: destination.index,
           }),
+          credentials: 'include',
         });
 
         if (!response.ok) {
@@ -93,11 +93,11 @@ export default function Lists() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({
         Id: listId,
       }),
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -115,6 +115,28 @@ export default function Lists() {
   const deleteBoard = (boardId) => {
     BoardsStore.getState().deleteBoard(boardId);
     // Make an API call to delete the board
+    fetch("http://localhost:8000/boards/delete", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        Id: boardId,
+      }),
+      credentials: "include",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.status === "success") {
+          console.log("Board deleted successfully");
+        } else {
+          console.error("Failed to delete board");
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting board:", error);
+      });
+
     navigate("/dashboard");
   }
 

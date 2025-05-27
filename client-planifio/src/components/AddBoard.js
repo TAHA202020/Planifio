@@ -17,8 +17,8 @@ export default function AddBoard({createProjectRef}) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
                 }
+                ,credentials: "include"
             })
             .then((res)=>{
                 if(res.status===200)

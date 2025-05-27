@@ -15,7 +15,7 @@ public class BoardsController : ControllerBase
         _context = context;
     }
 
-    [Authorize]
+    
     [HttpPost("lists/create")]
     public async Task<JsonResult> CreateList([FromBody] Lists lists)
     {
@@ -57,7 +57,7 @@ public class BoardsController : ControllerBase
 
 
 
-    [Authorize]
+    
     [HttpPost("create")]
     public async Task<JsonResult> Createboard([FromBody] Board board)
     {
@@ -76,12 +76,14 @@ public class BoardsController : ControllerBase
 
         return new JsonResult(new { status = "success", message = "board created successfully", boardId = board.Id });
     }
+    
     [HttpGet("get")]
     public async Task<JsonResult> GetBoards()
     {
-        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        var userEmail = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
         if (string.IsNullOrEmpty(userEmail))
         {
+            HttpContext.Response.StatusCode = 401;
             return new JsonResult(new { status = "error", message = "User email not found" });
         }
 
@@ -114,6 +116,10 @@ public class BoardsController : ControllerBase
     }
     public async Task<int> GetLastPositionWithinBoard(Guid boardId)
     {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        
+        var isOwner = await _context.Boards.AnyAsync(b => b.Id == boardId && b.UserEmail == userEmail);
+        
         var board = await _context.Boards
             .Include(b => b.Lists)
             .FirstOrDefaultAsync(b => b.Id == boardId);
@@ -130,6 +136,7 @@ public class BoardsController : ControllerBase
 
         return lastPosition;
     }
+    
     [HttpPost("list/validate-drag")]
     public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPositionDto updateListPositionDto)
     {
@@ -140,6 +147,12 @@ public class BoardsController : ControllerBase
         if (listId == Guid.Empty || boardId == Guid.Empty || newPosition < 0)
         {
             return new JsonResult(new { status = "error", message = "Invalid input data" });
+        }
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        var isOwner = await _context.Boards.AnyAsync(b => b.Id == boardId && b.UserEmail == userEmail);
+        if (!isOwner)
+        {
+            return new JsonResult(new { status = "error", message = "You are not authorized to update this list position" });
         }
 
         var board = await _context.Boards
@@ -183,7 +196,7 @@ public class BoardsController : ControllerBase
     }
 
 
-    [Authorize]
+    
     [HttpPost("cards/create")]
     public async Task<JsonResult> CreateCard([FromBody] Card card)
     {
@@ -230,7 +243,7 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = ex.Message });
         }
     }
-    [Authorize]
+    
     [HttpPost("cards/move")]
     public async Task<JsonResult> MoveCard([FromBody] MoveCardDto dto)
     {
@@ -240,7 +253,13 @@ public class BoardsController : ControllerBase
             {
                 return new JsonResult(new { status = "error", message = "Invalid input data" });
             }
-
+            //check is owner of board
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var isOwner = await _context.Boards.AnyAsync(b => b.Id == dto.BoardId && b.UserEmail == userEmail);
+            if (!isOwner)
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to move cards on this board" });
+            }
             var board = await _context.Boards
                 .Include(b => b.Lists)
                     .ThenInclude(l => l.Cards)
@@ -310,7 +329,7 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = $"Error moving card: {ex.Message}" });
         }
     }
-    [Authorize]
+    
     [HttpPost("edit/card/description")]
     public async Task<JsonResult> EditCardDescription([FromBody] Card card)
     {
@@ -320,6 +339,13 @@ public class BoardsController : ControllerBase
             {
                 return new JsonResult(new { status = "error", message = "Invalid card data" });
             }
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var isOwner = await _context.Cards.AnyAsync(c => c.Id == card.Id && c.List.Board.UserEmail == userEmail);
+            if (!isOwner)
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to edit this card" });
+            }
+            
 
             var existingCard = await _context.Cards.FindAsync(card.Id);
             if (existingCard == null)
@@ -338,7 +364,7 @@ public class BoardsController : ControllerBase
         }
 
     }
-    [Authorize]
+    
     [HttpPost("edit/card/due-date")]
     public async Task<JsonResult> EditCardDueDate([FromBody] Card card)
     {
@@ -348,6 +374,13 @@ public class BoardsController : ControllerBase
             {
                 return new JsonResult(new { status = "error", message = "Invalid card data" });
             }
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var isOwner = await _context.Cards.AnyAsync(c => c.Id == card.Id && c.List.Board.UserEmail == userEmail);
+            if (!isOwner)
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to edit this card" });
+            }
+            
 
             var existingCard = await _context.Cards.FindAsync(card.Id);
             if (existingCard == null)
@@ -365,97 +398,154 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = ex.Message });
         }
     }
-    [Authorize]
-[HttpPost("delete/card")]
-public async Task<JsonResult> DeleteCard([FromBody] Card card)
-{
-    try
+    
+    [HttpPost("delete/card")]
+    public async Task<JsonResult> DeleteCard([FromBody] Card card)
     {
-        if (card == null || card.Id == Guid.Empty)
+        try
         {
-            return new JsonResult(new { status = "error", message = "Invalid card data" });
-        }
+            if (card == null || card.Id == Guid.Empty)
+            {
+                return new JsonResult(new { status = "error", message = "Invalid card data" });
+            }
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var isOwner = await _context.Cards.AnyAsync(c => c.Id == card.Id && c.List.Board.UserEmail == userEmail);
+            if (!isOwner)
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to edit this card" });
+            }
+            
 
-        var existingCard = await _context.Cards.FindAsync(card.Id);
-        if (existingCard == null)
+            var existingCard = await _context.Cards.FindAsync(card.Id);
+            if (existingCard == null)
+            {
+                return new JsonResult(new { status = "error", message = "Card not found" });
+            }
+
+            var deletedCardPosition = existingCard.Position;
+            var listId = existingCard.ListId;
+
+            // Remove the card
+            _context.Cards.Remove(existingCard);
+
+            // Shift down positions of cards after the deleted card
+            var cardsToUpdate = await _context.Cards
+                .Where(c => c.ListId == listId && c.Position > deletedCardPosition)
+                .ToListAsync();
+
+            foreach (var c in cardsToUpdate)
+            {
+                c.Position -= 1;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return new JsonResult(new { status = "success", message = "Card deleted successfully" });
+        }
+        catch (Exception ex)
         {
-            return new JsonResult(new { status = "error", message = "Card not found" });
+            return new JsonResult(new { status = "error", message = ex.Message });
         }
-
-        var deletedCardPosition = existingCard.Position;
-        var listId = existingCard.ListId;
-
-        // Remove the card
-        _context.Cards.Remove(existingCard);
-
-        // Shift down positions of cards after the deleted card
-        var cardsToUpdate = await _context.Cards
-            .Where(c => c.ListId == listId && c.Position > deletedCardPosition)
-            .ToListAsync();
-
-        foreach (var c in cardsToUpdate)
-        {
-            c.Position -= 1;
-        }
-
-        await _context.SaveChangesAsync();
-
-        return new JsonResult(new { status = "success", message = "Card deleted successfully" });
     }
-    catch (Exception ex)
-    {
-        return new JsonResult(new { status = "error", message = ex.Message });
-    }
-}
 
 
     //delete list remove its cards
-    [Authorize]
-[HttpPost("list/delete")]
-public async Task<JsonResult> DeleteList([FromBody] Lists lists)
-{
-    try
+    
+    [HttpPost("list/delete")]
+    public async Task<JsonResult> DeleteList([FromBody] Lists lists)
     {
-        if (lists == null || lists.Id == Guid.Empty)
+        try
         {
-            return new JsonResult(new { status = "error", message = "Invalid list data" });
+            if (lists == null || lists.Id == Guid.Empty)
+            {
+                return new JsonResult(new { status = "error", message = "Invalid list data" });
+            }
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var isOwner = await _context.Lists.AnyAsync(l => l.Id == lists.Id && l.Board.UserEmail == userEmail);
+            if (!isOwner)
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to delete this list" });
+            }
+
+            var existingList = await _context.Lists
+                .Include(l => l.Cards)
+                .FirstOrDefaultAsync(l => l.Id == lists.Id);
+
+            if (existingList == null)
+            {
+                return new JsonResult(new { status = "error", message = "List not found" });
+            }
+
+            var deletedListPosition = existingList.Position;
+            var boardId = existingList.BoardId; // Assumes Lists has BoardId FK
+
+            // Remove the list and its cards
+            _context.Cards.RemoveRange(existingList.Cards);
+            _context.Lists.Remove(existingList);
+
+            // Shift positions of lists after the deleted one
+            var listsToUpdate = await _context.Lists
+                .Where(l => l.BoardId == boardId && l.Position > deletedListPosition)
+                .ToListAsync();
+
+            foreach (var l in listsToUpdate)
+            {
+                l.Position -= 1;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return new JsonResult(new { status = "success", message = "List and its cards deleted successfully" });
         }
-
-        var existingList = await _context.Lists
-            .Include(l => l.Cards)
-            .FirstOrDefaultAsync(l => l.Id == lists.Id);
-
-        if (existingList == null)
+        catch (Exception ex)
         {
-            return new JsonResult(new { status = "error", message = "List not found" });
+            return new JsonResult(new { status = "error", message = ex.Message });
         }
-
-        var deletedListPosition = existingList.Position;
-        var boardId = existingList.BoardId; // Assumes Lists has BoardId FK
-
-        // Remove the list and its cards
-        _context.Cards.RemoveRange(existingList.Cards);
-        _context.Lists.Remove(existingList);
-
-        // Shift positions of lists after the deleted one
-        var listsToUpdate = await _context.Lists
-            .Where(l => l.BoardId == boardId && l.Position > deletedListPosition)
-            .ToListAsync();
-
-        foreach (var l in listsToUpdate)
-        {
-            l.Position -= 1;
-        }
-
-        await _context.SaveChangesAsync();
-
-        return new JsonResult(new { status = "success", message = "List and its cards deleted successfully" });
     }
-    catch (Exception ex)
+    //delete board remove its lists and cards   
+    
+    [HttpPost("delete")]
+    public async Task<JsonResult> DeleteBoard([FromBody] Board board)
     {
-        return new JsonResult(new { status = "error", message = ex.Message });
+        try
+        {
+            if (board == null || board.Id == Guid.Empty)
+            {
+                return new JsonResult(new { status = "error", message = "Invalid board data" });
+            }
+            var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+            var isOwner = await _context.Boards.AnyAsync(b => b.Id == board.Id && b.UserEmail == userEmail);
+            if (!isOwner)
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to delete this board" });
+            }
+
+            var existingBoard = await _context.Boards
+                .Include(b => b.Lists)
+                    .ThenInclude(l => l.Cards)
+                .FirstOrDefaultAsync(b => b.Id == board.Id);
+
+            if (existingBoard == null)
+            {
+                return new JsonResult(new { status = "error", message = "Board not found" });
+            }
+
+            // Remove all lists and their cards
+            _context.Cards.RemoveRange(existingBoard.Lists.SelectMany(l => l.Cards));
+            _context.Lists.RemoveRange(existingBoard.Lists);
+            _context.Boards.Remove(existingBoard);
+
+            await _context.SaveChangesAsync();
+
+            return new JsonResult(new { status = "success", message = "Board and its lists and cards deleted successfully" });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { status = "error", message = ex.Message });
+        }
     }
-}
+
+
 }
 
 public class UpdateListPositionDto

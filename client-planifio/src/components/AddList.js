@@ -8,13 +8,13 @@ function AddList({ boardId }) {
         fetch("http://localhost:8000/boards/lists/create", {
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             method: "POST",
             body: JSON.stringify({
                 boardId: boardId,
                 title: newListName,
             }),
+            credentials: "include",
         })
             .then((res) => res.json())
             .then((data) => {

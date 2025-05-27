@@ -52,12 +52,12 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({
         Id: cardId,
         DueTime: newDate,
       }),
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -81,12 +81,12 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({
         Id: cardId,
         Description: html,
       }),
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {
@@ -102,11 +102,11 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify({
         Id: cardId,
       }),
+      credentials: "include",
     })
       .then((response) => response.json())
       .then((data) => {

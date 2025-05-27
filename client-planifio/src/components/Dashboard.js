@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { isAuthenticated } from "../Utils/Auth";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { HiOutlineRectangleStack } from "react-icons/hi2";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { IoCalendarNumberOutline } from "react-icons/io5";
-
+import user from "../assets/user.png";
+import { FaDoorOpen } from "react-icons/fa6";
 
 
 import BoardsStore from "../Context/BoardsStore";
@@ -14,7 +14,7 @@ export default function Dashboard({}) {
   const createProjectRef = useRef(null);
   const [Loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const isAuth = isAuthenticated();
+  const isAuth = BoardsMenu((state) => state.isAuthenticated);
   const setBoardsStore = BoardsStore((state) => state.setBoardsStore);
   function transformBackendData(backendBoards) {
     const boards = [];
@@ -69,15 +69,15 @@ export default function Dashboard({}) {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        
         },
+        credentials: "include",
       });
       if (res.status === 200) {
         const data = await res.json();
         setBoardsStore(transformBackendData(data.boards));
         setLoading(false);
       } else if (res.status === 401) {
-        localStorage.removeItem("token");
         navigate("/authentication");
       }
     } catch (error) {
@@ -85,7 +85,23 @@ export default function Dashboard({}) {
     }
   };
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    fetch("http://localhost:8000/auth/logout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          console.log("Logout successful");
+          navigate("/authentication");
+        }})
+      .catch((error) => {
+        console.error("Error during logout:", error);
+      });
+
+    BoardsStore.getState().resetBoardsStore();
     navigate("/authentication");
   };
   useEffect(() => {
@@ -140,11 +156,6 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
             <IoCalendarNumberOutline/>Calendar
           </Link>
         </section>
-        <section className="sidebar-footer absolute bottom-0 w-full bg-[#232323]">
-          <button className="btn btn-primary w-full rounded-none" onClick={handleLogout}>
-            Logout
-          </button>
-        </section>
       </aside>
 
       {/* Main Content */}
@@ -171,7 +182,23 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
             <a tabindex="-1" class="dropdown-item text-sm">Subscriptions</a>
           </div>
         </div>
+        
           </div>
+          <div class="avatar avatar-ring avatar-md ">
+        <div class="dropdown-container ">
+          <div class="dropdown">
+            <label class="btn btn-ghost flex cursor-pointer px-0 hover:bg-inherit" tabindex="0">
+              <img src={user} alt="avatar" />
+            </label>
+            <div class="dropdown-menu dropdown-menu-bottom-left bg-[#1a1a1a] rounded-md w-[150px] mt-2">
+              <span className="text-white w-full text-center mt-[10px]" >tahajayche@gmail.com</span>
+              <div className="divider"></div>
+              <button class="dropdown-item text-sm btn btn-solid-error flex flex-row justify-between px-5" onClick={handleLogout}> Leave <FaDoorOpen/></button>
+
+            </div>
+          </div>
+        </div>
+      </div>
         </div>
 
         {/* Create Project Button */}

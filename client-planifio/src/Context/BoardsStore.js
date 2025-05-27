@@ -1,6 +1,8 @@
 import { create } from 'zustand';
+import { isAuthenticated } from '../Utils/Auth';
 
 const BoardsStore = create((set) => ({
+  isAuthenticated: false,
   boards: [],
   lists: {},
   cards: {},
@@ -14,6 +16,16 @@ const BoardsStore = create((set) => ({
       events,
     }));
   },
+  Authenticated: (isAuth) => set(() => ({
+    isAuthenticated: isAuth,
+  }))
+  ,
+  resetBoardsStore: () => set(() => ({
+      isAuthenticated: false,
+      boards: [],
+      lists: {},
+      cards: {},
+      events:{}})),
 
   addBoard: (board) => set((state) => ({
     boards: [...state.boards, board],

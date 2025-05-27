@@ -13,13 +13,13 @@ function AddCard({ boardId, listId,listIndex }) {
     fetch("http://localhost:8000/boards/cards/create", {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       method: "POST",
       body: JSON.stringify({
         listId: listId,
         title: newCardName,
       }),
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => {
