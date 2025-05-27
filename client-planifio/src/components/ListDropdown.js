@@ -24,7 +24,7 @@ export default function ListDropdown({ onDelete }) {
         <HiOutlineDotsVertical />
       </button>
       {open && (
-        <div className="absolute right-0 model-content mt-1 z-10 w-24 bg-[#131313] p-2 rounded-md">
+        <div className="absolute right-0 model-content mt-1 w-24 bg-[#131313] p-2 rounded-md z-10">
           <button
             onClick={onDelete}
             className="btn btn-solid-error w-full rounded-sm btn-sm "

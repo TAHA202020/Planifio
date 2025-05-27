@@ -177,7 +177,29 @@ const BoardsStore = create((set) => ({
       events: updatedEvents,
     };
   }),
-  
+  // delte board with lists within it and card within it 
+  deleteBoard: (boardId) => set((state) => {
+    const updatedBoards = state.boards.filter((board) => board.id !== boardId);
+    const updatedLists = { ...state.lists };
+    const updatedCards = { ...state.cards };
+    const updatedEvents = { ...state.events };
+    if (updatedLists[boardId]) {
+      updatedLists[boardId].forEach((list) => {
+        list.cardIds.forEach((cardId) => {
+          delete updatedCards[cardId];
+          delete updatedEvents[cardId];
+        });
+      });
+      delete updatedLists[boardId];
+    }
+
+    return {
+      boards: updatedBoards,
+      lists: updatedLists,
+      cards: updatedCards,
+      events: updatedEvents,
+    };
+  }),
 }));
 
 export default BoardsStore;

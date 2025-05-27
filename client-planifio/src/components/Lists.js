@@ -1,23 +1,21 @@
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, useNavigate } from "react-router-dom";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddList from "./AddList";
 import AddCard from "./AddCard";
 import BoardsStore from "../Context/BoardsStore";
 import Card from "./Card";
-import { HiOutlineDotsVertical } from "react-icons/hi";
 import ListDropdown from "./ListDropdown";
+import { useEffect, useState } from "react";
 
 export default function Lists() {
+  const navigate=useNavigate();
   const { boardId } = useParams();
+  const [board, setBoard] = useState(null);
+  const [loading,setLoading]=useState(true);
   const lists = BoardsStore((state) => state.lists[boardId]);
   const cards = BoardsStore((state) => state.cards);
   const moveList = BoardsStore((state) => state.moveList);
   const moveCard = BoardsStore((state) => state.moveCard);
-
-  if (!lists) {
-    return <Navigate to="/dashboard" />;
-  }
-
   const handleDragEnd = async (result) => {
     const { destination, source, draggableId, type } = result;
 
@@ -114,9 +112,33 @@ export default function Lists() {
       });
       BoardsStore.getState().deleteList(boardId, listId);
   }
+  const deleteBoard = (boardId) => {
+    BoardsStore.getState().deleteBoard(boardId);
+    // Make an API call to delete the board
+    navigate("/dashboard");
+  }
+
+
+
+  useEffect(()=>{
+    setBoard(BoardsStore.getState().boards.find((board) => board.id === boardId));
+    setLoading(false)
+    },[boardId])
+  if (!lists) {
+    return <Navigate to="/dashboard" />;
+  }
+  if(!board){
+    return <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+  }
   return (
-    <div className="p-2 h-full">
-      
+    <div className="pb-2 px-2 h-full">
+      <div className="flex justify-between items-center mb-4 bg-[#232323] p-2 rounded-br-md rounded-bl-md">
+        <h1 className="flex justify-center items-center text-white text-md font-medium italic ">{board.name}</h1>
+        <ListDropdown onDelete={()=>{deleteBoard(boardId)}}/>
+      </div>
+    
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="board" direction="horizontal" type="LIST" >
         {(provided) => (

@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { isAuthenticated } from "../Utils/Auth";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import { HiOutlineRectangleStack } from "react-icons/hi2";
+import { RiArrowDropDownLine } from "react-icons/ri";
+import { IoCalendarNumberOutline } from "react-icons/io5";
+
+
 
 import BoardsStore from "../Context/BoardsStore";
 import BoardsMenu from "./BoardsMenu";
@@ -115,7 +119,7 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
       {/* Sidebar (absolute) */}
       <aside
-        className={`absolute left-0 top-0 z-40 w-64 h-full bg-white shadow-md transition-transform duration-150 bg-[#232323] ${
+        className={`absolute left-0 top-0 z-40 w-64 h-full bg-white shadow-md transition-transform duration-150 bg-[#232323] w-[350px] ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -130,9 +134,10 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 		</div>
 	</section>
         <section className="sidebar-content bg-[#232323]">
-          <BoardsMenu />
-          <Link className="menu-item block font-semibold" to={"/dashboard/calendar"}>
-            Calendar
+          <BoardsMenu closeSideBar={closeSidebar} />
+          <div className="divider"></div>
+          <Link className="menu-item block font-semibold flex " to={"/dashboard/calendar"} onClick={closeSidebar}>
+            <IoCalendarNumberOutline/>Calendar
           </Link>
         </section>
         <section className="sidebar-footer absolute bottom-0 w-full bg-[#232323]">
@@ -147,17 +152,25 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
         {/* Top Bar */}
         <div className="px-7 py-3 bg-[#232323] flex justify-between items-center z-10">
           <div className="flex items-center gap-5 w-full text-white">
-			<svg fill="none" height="42" viewBox="0 0 32 32" width="42" xmlns="http://www.w3.org/2000/svg">
-			<rect height="100%" rx="16" width="100%"></rect>
-			<path clip-rule="evenodd" d="M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z" fill="currentColor" fill-rule="evenodd"></path>
-		</svg>
+          <svg fill="none" height="42" viewBox="0 0 32 32" width="42" xmlns="http://www.w3.org/2000/svg">
+          <rect height="100%" rx="16" width="100%"></rect>
+          <path clip-rule="evenodd" d="M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z" fill="currentColor" fill-rule="evenodd"></path>
+        </svg>
             <button className="btn rounded-sm btn-sm btn-primary font-bold" onClick={toggleSidebar}>
 				<HiOutlineRectangleStack className="h-full mr-2" />
               My Projects
             </button>
-			<label className="btn btn-primary btn-sm rounded-sm text-sm font-bold" htmlFor="modal-3">
-            Create Project
-          </label>
+        <label className="btn btn-primary btn-sm rounded-sm text-sm font-bold" htmlFor="modal-3">
+              Create Project
+            </label>
+            <div class="dropdown">
+        <label class="btn btn-primary btn-sm rounded-sm text-sm font-bold" tabindex="0">Recent <RiArrowDropDownLine className="text-xl"/></label>
+          <div class="dropdown-menu dropdown-menu-bottom-right gap-1 rounded-sm p-1">
+            <a class="dropdown-item text-sm">Profile</a>
+            <a tabindex="-1" class="dropdown-item text-sm">Account settings</a>
+            <a tabindex="-1" class="dropdown-item text-sm">Subscriptions</a>
+          </div>
+        </div>
           </div>
         </div>
 
@@ -166,7 +179,7 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
           
           <input className="modal-state" id="modal-3" type="checkbox" />
           <div className="modal">
-            <label className="modal-overlay"></label>
+            <label className="modal-overlay" htmlFor="modal-3"></label>
             <div className="modal-content flex flex-col gap-5">
               <label
                 htmlFor="modal-3"
@@ -179,9 +192,8 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
             </div>
           </div>
         </div>
-
         {/* Outlet/Main Page Content */}
-        <div className="flex-1 w-full overflow-x-auto overflow-y-hidden z-0 p-2">
+        <div className="flex-1 w-full overflow-x-auto overflow-y-hidden z-0 pb-2 px-2">
           <Outlet />
         </div>
       </div>

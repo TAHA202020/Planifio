@@ -2,8 +2,9 @@ import { useNavigate, useParams } from "react-router-dom";
 import { IoFolderOpen } from "react-icons/io5";
 import { FaFolderOpen } from "react-icons/fa6";
 import BoardsStore from "../Context/BoardsStore"; // Assuming you've exported `useStore` from your Zustand store
+import ListDropdown from "./ListDropdown";
 
-export default function BoardsMenu() {
+export default function BoardsMenu({closeSideBar}) {
   const { boardId } = useParams();
   const navigate = useNavigate();
 
@@ -40,17 +41,15 @@ export default function BoardsMenu() {
       <div className="menu-item-collapse">
         <div className="min-h-0">
           {boards.map((board) => (
-            <li
-              key={board.id}
-              onClick={() => {
+            <div className="relative  " key={board.id} onClick={() => {
+                closeSideBar();
                 navigate(`/dashboard/${board.id}`);
-              }}
-              className="menu-item rounded-none w-[300px]"
-            >
+              }}>
+            <li className="menu-item rounded-none">
               {boardId === board.id ? <FaFolderOpen />:<IoFolderOpen />}
-              
               {board.name}
             </li>
+          </div>
           ))}
         </div>
       </div>
