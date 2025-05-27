@@ -52,6 +52,7 @@ export default function Authentication() {
         })
     }
     useEffect(()=>{
+        document.title = "Planifio - Authentication";
         if(Authenticated){
             navigate("/dashboard")
         }

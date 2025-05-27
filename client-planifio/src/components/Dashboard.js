@@ -105,6 +105,7 @@ export default function Dashboard({}) {
     navigate("/authentication");
   };
   useEffect(() => {
+    document.title = "Planifio - Dashboard";
     if (!isAuth) {
       navigate("/authentication");
       return;

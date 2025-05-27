@@ -4,6 +4,7 @@ import BoardsStore from '../Context/BoardsStore'
 import { Link } from 'react-router-dom';
 export default function Calendar() {
   const events=BoardsStore((state) => state.events);
+  document.title = "Planifio - Calendar";
   return (
     <FullCalendar
       height={"100%"}

@@ -143,8 +143,11 @@ export default function Lists() {
 
 
   useEffect(()=>{
-    setBoard(BoardsStore.getState().boards.find((board) => board.id === boardId));
+     document.title = `Planifio - Loading...`;
+    const board = BoardsStore.getState().boards.find((board) => board.id === boardId);
+    setBoard(board);
     setLoading(false)
+    document.title = `Planifio - ${board.name || "Loading..."}`;
     },[boardId])
   if (!lists) {
     return <Navigate to="/dashboard" />;
