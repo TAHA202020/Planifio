@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { isAuthenticated } from '../Utils/Auth';
 
 const BoardsStore = create((set) => ({
+  email:"",
   isAuthenticated: false,
   boards: [],
   lists: {},
@@ -16,6 +17,8 @@ const BoardsStore = create((set) => ({
       events,
     }));
   },
+  setEmail: (email) => set(() => ({
+    email: email,})),
   Authenticated: (isAuth) => set(() => ({
     isAuthenticated: isAuth,
   }))

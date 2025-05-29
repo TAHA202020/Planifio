@@ -32,6 +32,9 @@ app.UseWhen(ctx => ctx.Request.Path.StartsWithSegments("/boards"), builder =>
 {
     builder.UseMiddleware<JwtCookieMiddleware>();
 });
+
+app.UseAuthorization();
+
 app.MapControllers();
 
 app.Run();

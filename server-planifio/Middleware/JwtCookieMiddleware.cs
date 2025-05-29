@@ -16,7 +16,7 @@ public class JwtCookieMiddleware
 
     public async Task Invoke(HttpContext context, IServiceProvider serviceProvider)
     {
-
+        Console.WriteLine("JwtCookieMiddleware invoked-----------------------------------------------------");
         using var scope = serviceProvider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<PlanifioDbContext>();
         var tokenHandler = new JwtSecurityTokenHandler();

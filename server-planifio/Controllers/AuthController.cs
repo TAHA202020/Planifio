@@ -117,7 +117,7 @@ public class AuthController : ControllerBase
             issuer: _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.Now.AddMinutes(10),
+            expires: DateTime.Now.AddMinutes(1),
             signingCredentials: creds
         );
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -189,7 +189,6 @@ public class AuthController : ControllerBase
         var jwtToken = tokenHandler.ReadJwtToken(accessToken);
         string userEmail = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
         
-        Console.WriteLine("User Email: --------------------------------------------" + userEmail);
         if (userEmail != null)
         {
             var user = _context.Users.SingleOrDefault(u => u.Email == userEmail);

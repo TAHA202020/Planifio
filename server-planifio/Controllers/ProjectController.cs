@@ -76,7 +76,6 @@ public class BoardsController : ControllerBase
 
         return new JsonResult(new { status = "success", message = "board created successfully", boardId = board.Id });
     }
-    
     [HttpGet("get")]
     public async Task<JsonResult> GetBoards()
     {
@@ -111,8 +110,7 @@ public class BoardsController : ControllerBase
                     }).ToList()
             })
             .ToListAsync();
-
-        return new JsonResult(new { status = "success", boards });
+        return new JsonResult(new { status = "success", boards,email = userEmail });
     }
     public async Task<int> GetLastPositionWithinBoard(Guid boardId)
     {

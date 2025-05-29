@@ -11,6 +11,7 @@ import BoardsStore from "../Context/BoardsStore";
 import BoardsMenu from "./BoardsMenu";
 import AddBoard from "./AddBoard";
 export default function Dashboard({}) {
+  const email = BoardsStore((state) => state.email);
   const createProjectRef = useRef(null);
   const [Loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -76,6 +77,7 @@ export default function Dashboard({}) {
       if (res.status === 200) {
         const data = await res.json();
         setBoardsStore(transformBackendData(data.boards));
+        BoardsStore.getState().setEmail(data.email);
         setLoading(false);
       } else if (res.status === 401) {
         navigate("/authentication");
@@ -140,22 +142,25 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-		<section class="sidebar-title items-center p-4 bg-[#232323]">
-		<svg fill="none" height="42" viewBox="0 0 32 32" width="42" xmlns="http://www.w3.org/2000/svg">
-			<rect height="100%" rx="16" width="100%"></rect>
-			<path clip-rule="evenodd" d="M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z" fill="currentColor" fill-rule="evenodd"></path>
-		</svg>
-		<div class="flex flex-col">
-			<span>Planifio</span>
-			<span class="text-xs font-normal text-content2">For Planning</span>
-		</div>
-	</section>
+          <section class="sidebar-title items-center p-4 bg-[#232323]">
+          <svg fill="none" height="42" viewBox="0 0 32 32" width="42" xmlns="http://www.w3.org/2000/svg">
+            <rect height="100%" rx="16" width="100%"></rect>
+            <path clip-rule="evenodd" d="M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z" fill="currentColor" fill-rule="evenodd"></path>
+          </svg>
+          <div class="flex flex-col">
+            <span>Planifio</span>
+            <span class="text-xs font-normal text-content2">For Planning</span>
+          </div>
+        </section>
+        <div className="divider bg-[#232323] m-0"></div>
         <section className="sidebar-content bg-[#232323]">
           <BoardsMenu closeSideBar={closeSidebar} />
-          <div className="divider"></div>
           <Link className="menu-item block font-semibold flex " to={"/dashboard/calendar"} onClick={closeSidebar}>
             <IoCalendarNumberOutline/>Calendar
           </Link>
+          
+          
+          
         </section>
       </aside>
 
@@ -192,7 +197,7 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
               <img src={user} alt="avatar" />
             </label>
             <div class="dropdown-menu dropdown-menu-bottom-left bg-[#1a1a1a] rounded-md w-[150px] mt-2">
-              <span className="text-white w-full text-center mt-[10px]" >tahajayche@gmail.com</span>
+              <span className="text-white w-full text-center mt-[10px]" >{email}</span>
               <div className="divider"></div>
               <button class="dropdown-item text-sm btn btn-solid-error flex flex-row justify-between px-5" onClick={handleLogout}> Leave <FaDoorOpen/></button>
 

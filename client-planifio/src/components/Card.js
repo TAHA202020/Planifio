@@ -32,7 +32,20 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
   const editDueDate = BoardsStore((state) => state.editDueDate);
   const [html, setHtml] = useState(description);
   const modalId = `card-modal-${cardId}`;
-
+  /*
+  {dueDate &&
+                  (daysLeft === 1 ? (
+                    <span className="badge badge-xs ml-2 badge-warning rounded-sm"> bg-[#f31260]
+                      {"<24h left"}
+                    </span>
+                  ) : daysLeft < 1 ? (
+                    <span className="badge badge-xs ml-2  badge-error rounded-sm"> bg-[#f31260]
+                      Overdue
+                    </span>
+                  ) : (
+                    null bg-[#3a3a3a]
+                  ))}*/
+  const cardClassdueDate= dueDate && daysLeft < 1 ? "bg-[#f31260]" : dueDate && daysLeft === 1 ? "bg-[#f59e0b]" : "bg-[#3a3a3a]";
   const getItemStyle = (style) => ({
     ...style,
     transitionProperty: "none",
@@ -251,16 +264,16 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
             {...provided.draggableProps}
             {...provided.dragHandleProps}
           >
-            <div className="bg-[#3a3a3a] text-white rounded px-3 py-3 my-1 flex items-center justify-between">
-              <div className="text-ellipsis">
+            <div className={`${cardClassdueDate} text-white rounded px-3 py-3 my-1 flex items-center justify-between `} >
+              <div className="text-ellipsis font-semibold text-lg">
                 {title}
                 {dueDate &&
                   (daysLeft === 1 ? (
-                    <span className="badge badge-xs ml-2 badge-warning rounded-sm">
-                      {"<24h left"}
+                    <span className="badge badge-xs ml-2 badge-warning rounded-sm text-xs">
+                      {"<24h"}
                     </span>
                   ) : daysLeft < 1 ? (
-                    <span className="badge badge-xs ml-2  badge-error rounded-sm">
+                    <span className="badge badge-xs ml-2  badge-error rounded-sm text-xs">
                       Overdue
                     </span>
                   ) : (
@@ -268,7 +281,7 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
                   ))}
               </div>
               <label
-                className="btn btn-solid-default btn-sm cursor-pointer edit-card"
+                className="btn btn-solid-default btn-sm cursor-pointer edit-card bg-white/30"
                 htmlFor={modalId}
               >
                 <FaRegEdit />
