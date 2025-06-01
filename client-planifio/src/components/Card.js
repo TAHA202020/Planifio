@@ -80,7 +80,16 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
         console.error("Error:", error);
       });
   }
+  function formatDate(date) {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
 
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
 
   const handlechangeDescription = (cardId, html) => {
     const letOldDescription = description;
@@ -140,31 +149,18 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
           htmlFor={modalId}
           onClick={() => {
             setIsEditing(false);
+            seteditingDate(false);
             setHtml(description);
           }}
         ></label>
         <div className="modal-content flex flex-col gap-5 w-[50vw] h-[75vh] overflow-y-auto relative rounded-sm">
-          <label
-            htmlFor={modalId}
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-            onClick={() => {
-              setIsEditing(false);
-              setHtml(description);
-            }}
-          >
-            ✕
-          </label>
-          <h2 className="text-xl font-bold"> {title}</h2>
-          <div className="flex items-center gap-2">
-  <div className="alert alert-info p-2 rounded">
-    <div className="flex flex-row items-center gap-1">
-      <MdOutlineDateRange />
-      <span className="text-sm">Due date :</span>
-      {editingDate ? (
-        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2 bg-[#232323] px-3 py-1 rounded-sm">
+            <h2 className="text-xl font-bold"> {title}</h2>
+            {editingDate ? (
+        <div className="flex items-center gap-1">
           <input
             type="datetime-local"
-            className="outline-none text-sm text-content2"
+            className="datetime-input outline-none text-sm text-content2 kbd"
             defaultValue={dueDate ? dueDate : ""}
             ref={dueDateInputRef}
           />
@@ -183,45 +179,32 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
         </div>
       ) : (
         <span
-          className="text-content2 text-sm cursor-pointer"
+          className=" kbd text-content2 text-sm cursor-pointer"
           onClick={() => seteditingDate(true)}
         >
           {dueDate
-            ? new Date(dueDate).toLocaleString(undefined, {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })
-            : "Click to add due date"}
+            ? formatDate(dueDate)
+            : "Add date"}
         </span>
       )}
-    </div>
-  </div>
-</div>
-          <div className="divider m-0"></div>
+          </div>
+          
           <div>
-            <div className="bg-[#232323] flex items-center justify-between font-bold text-lg  ">
+            <div className=" flex items-center justify-between font-bold text-lg  ">
               <div className="flex items-center gap-2">
                 <MdOutlineDescription />
                 <p>description</p>
               </div>
-              <button
-                className="btn btn-solid-warning btn-sm rounded-sm outline-none"
-                onClick={() => {
+              
+            </div>
+            {!isEditing && <div
+              className="bg-[#232323] rounded mt-2 kbd w-full block text-sm"
+              dangerouslySetInnerHTML={{ __html: html }}
+              onClick={() => {
                   setHtml(description);
                   setIsEditing(!isEditing);
                 }}
-              >
-                {" "}
-                <FaRegEdit />
-              </button>
-            </div>
-            <div
-              className="bg-[#232323] rounded mt-2 kbd w-full block text-sm"
-              dangerouslySetInnerHTML={{ __html: html }}
-            ></div>
+            ></div>}
           </div>
           {isEditing && (
             <div className="flex flex-col gap-2">
@@ -237,7 +220,6 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
                   <BtnStrikeThrough />
                   <BtnBold />
                   <BtnItalic />
-                  <BtnLink />
                 </Toolbar>
               </Editor>
               <button
@@ -264,8 +246,8 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
             {...provided.draggableProps}
             {...provided.dragHandleProps}
           >
-            <div className={`${cardClassdueDate} text-white rounded px-3 py-3 my-1 flex items-center justify-between `} >
-              <div className="text-ellipsis font-semibold text-lg">
+            <label htmlFor={modalId} className={`${cardClassdueDate} text-white rounded px-3 py-3 my-1 flex items-center justify-between `} >
+              <div className="text-ellipsis font-semibold text-sm flex items-center">
                 {title}
                 {dueDate &&
                   (daysLeft === 1 ? (
@@ -280,14 +262,9 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
                     null
                   ))}
               </div>
-              <label
-                className="btn btn-solid-default btn-sm cursor-pointer edit-card bg-white/30"
-                htmlFor={modalId}
-              >
-                <FaRegEdit />
-              </label>
               
-            </div>
+              
+            </label>
             
           </div>
         )}

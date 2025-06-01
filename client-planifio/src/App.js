@@ -3,11 +3,12 @@ import Authentication from './components/Authentication';
 import Dashboard from './components/Dashboard';
 import Lists from './components/Lists';
 import Calendar from './components/Calendar';
+import Home from './components/Home';
 function App() {
   return (
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<Navigate to={"/dashboard"}/>} />
+      <Route path="/" element={<Home/>} />
       <Route path="/authentication" element={<Authentication/>} />
       <Route path="/dashboard" element={<Dashboard/>}>
         <Route path="calendar" element={<Calendar/>} />

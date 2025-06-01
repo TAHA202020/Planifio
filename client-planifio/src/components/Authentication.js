@@ -4,7 +4,7 @@ import { isAuthenticated } from "../Utils/Auth";
 import BoardsStore from "../Context/BoardsStore";
 
 export default function Authentication() {
-    const Authenticated=BoardsStore((state) => state.isAuthenticated);
+    const Authenticated=document.cookie;
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [otp, setOtp] = useState();
@@ -51,12 +51,7 @@ export default function Authentication() {
             console.log("Error:", error);
         })
     }
-    useEffect(()=>{
-        document.title = "Planifio - Authentication";
-        if(Authenticated){
-            navigate("/dashboard")
-        }
-    } , []);
+    
     return (<div className="w-full h-[100vh] flex flex-col items-center justify-center">
         <div className="card p-10">
             <div className="card-header justify-center">Login/Register</div>
