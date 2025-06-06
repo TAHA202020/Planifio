@@ -18,7 +18,7 @@ export default function Home()
         <p className="text-xl text-gray-600 mb-6">
           Create boards, lists, and cards with drag-and-drop. Stay on track with calendar deadlines.
         </p>
-        <Link to="/signup" className="bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700">
+        <Link to="/dashboard" className="bg-blue-600 text-white px-6 py-3 rounded shadow hover:bg-blue-700">
           Get Started
         </Link>
       </section>

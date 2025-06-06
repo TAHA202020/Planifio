@@ -38,8 +38,8 @@ export default function AddBoard({createProjectRef}) {
         }
     return (
         <div className='p-6'>
-            <p className='text-sm font-bold'>Create New Project</p>
-                <input className="input input-sm input-primary rounded-sm mt-2" placeholder="Project Name" value={projectName} onChange={(e)=>{setProjectName(e.target.value)}} />
-                <button className='btn btn-primary btn-sm w-full rounded-sm mt-2' onClick={handleCreateProject}>Create Project</button>
+            <p className='text-sm font-bold'>Create New Board</p>
+                <input className="input input-sm input-primary rounded-sm mt-2" placeholder="Board Name" value={projectName} onChange={(e)=>{setProjectName(e.target.value)}} />
+                <button className='btn btn-primary btn-sm w-full rounded-sm mt-2' onClick={handleCreateProject}>Create Board</button>
         </div>)
 }

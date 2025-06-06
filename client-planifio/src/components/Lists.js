@@ -158,9 +158,9 @@ export default function Lists() {
       </div>
   }
   return (
-    <div className="pb-2 px-2 h-full">
-      <div className="flex justify-between items-center mb-4 bg-[#232323] p-2 rounded-br-md rounded-bl-md">
-        <h1 className="flex justify-center items-center text-white text-md font-medium italic ">{board.name}</h1>
+    <div className="pb-2 px-2 h-full relative flex flex-col">
+      <div className="flex justify-between items-center mb-4 p-2 w-[100vw] relative left-[-16px]">
+        <h1 className="flex justify-center items-center text-white text-lg font-bold ">{board.name}</h1>
         <ListDropdown onDelete={()=>{deleteBoard(boardId)}}/>
       </div>
     
@@ -168,7 +168,7 @@ export default function Lists() {
       <Droppable droppableId="board" direction="horizontal" type="LIST" >
         {(provided) => (
           <div
-            className="flex flex-row items-start justify-start mt-2 overflow-x-auto h-full "
+            className="flex-1 flex flex-row items-start justify-start mt-2 overflow-x-auto"
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
@@ -177,7 +177,7 @@ export default function Lists() {
                 <Draggable draggableId={list.id} index={listIndex} key={list.id}>
                   {(provided) => (
                     <div
-                      className="min-w-[300px] w-[300px] bg-[#232323] rounded-md p-2 flex flex-col mx-[10px]"
+                      className="min-w-[275px] w-[275px] bg-[#232323] rounded-md p-2  flex flex-col mx-[10px]  max-h-[100%]"
                       ref={provided.innerRef}
                       style={getItemStyle(provided.draggableProps.style)}
                       {...provided.draggableProps}
@@ -189,7 +189,7 @@ export default function Lists() {
                       <Droppable droppableId={list.id} type="CARD">
                         {(provided) => (
                           <div
-                            className="flex flex-col h-full min-h-[50px]"
+                            className="flex flex-col h-full min-h-[50px] max-h-[90%] overflow-y-auto"
                             ref={provided.innerRef}
                             {...provided.droppableProps}
                           >

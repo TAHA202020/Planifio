@@ -1,7 +1,6 @@
 import { Draggable } from "@hello-pangea/dnd";
 import React, { useRef } from "react";
 import { useState } from "react";
-import { MdOutlineDateRange } from "react-icons/md";
 import Editor, {
   BtnBold,
   BtnLink,
@@ -13,12 +12,11 @@ import Editor, {
   Toolbar,
 } from "react-simple-wysiwyg";
 import { MdOutlineDescription } from "react-icons/md";
-import { FaRegEdit } from "react-icons/fa";
-import { FaEdit } from "react-icons/fa";
 import BoardsStore from "../Context/BoardsStore";
 import { GiConfirmed } from "react-icons/gi";
 import { MdOutlineCancel } from "react-icons/md";
-
+import { LuClock5 } from "react-icons/lu";
+import { BsTextParagraph } from "react-icons/bs";
 
 
 function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTitle}) {
@@ -155,7 +153,7 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
         ></label>
         <div className="modal-content flex flex-col gap-5 w-[50vw] h-[75vh] overflow-y-auto relative rounded-sm">
           <div className="flex items-center justify-between gap-2 bg-[#232323] px-3 py-1 rounded-sm">
-            <h2 className="text-xl font-bold"> {title}</h2>
+            <h2 className="text-xl font-bold overflow-hidden text-nowrap"> {title}</h2>
             {editingDate ? (
         <div className="flex items-center gap-1">
           <input
@@ -239,30 +237,32 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
       </div>
 
       <Draggable draggableId={cardId} index={cardIndex}>
-        {(provided) => (
+        {(provided ,snapshot) => (
           <div
             ref={provided.innerRef}
             style={getItemStyle(provided.draggableProps.style)}
             {...provided.draggableProps}
             {...provided.dragHandleProps}
           >
-            <label htmlFor={modalId} className={`${cardClassdueDate} text-white rounded px-3 py-3 my-1 flex items-center justify-between `} >
-              <div className="text-ellipsis font-semibold text-sm flex items-center">
+
+            <label htmlFor={modalId} className={`${cardClassdueDate} cursor-pointer text-white rounded px-3 py-3 my-1 flex flex-col items-start justify-between w-full gap-2 ${snapshot.isDragging && !snapshot.isDropAnimating?"rotate-[-3deg] z-10":null}`} >
+              <div className="text-wrap text-sm w-full break-words whitespace-normal">
                 {title}
-                {dueDate &&
-                  (daysLeft === 1 ? (
-                    <span className="badge badge-xs ml-2 badge-warning rounded-sm text-xs">
-                      {"<24h"}
-                    </span>
-                  ) : daysLeft < 1 ? (
-                    <span className="badge badge-xs ml-2  badge-error rounded-sm text-xs">
-                      Overdue
-                    </span>
-                  ) : (
-                    null
-                  ))}
               </div>
-              
+              <div className="flex items-center gap-2 overflow-hidden text-[#d3d3d3]">
+                {dueDate && (
+                  <div className=" flex items-center gap-1 text-xs">
+                    <LuClock5/>
+                    <div>
+                      {new Date(dueDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                    </div>
+                  </div>
+                )}
+                {description && description!=="<br>" && (<BsTextParagraph/>)}
+              </div>
               
             </label>
             

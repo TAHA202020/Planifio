@@ -39,7 +39,7 @@ function AddCard({ boardId, listId,listIndex }) {
   const [newCardName, setNewCardName] = useState("");
 
   return (
-    <div className="flex flex-row items-center gap-2 mt-2">
+    <div className="flex flex-row items-center gap-2 mt-2 ">
       <input
         className="input input-sm rounded-sm"
         placeholder="Ajouter une autre carte"

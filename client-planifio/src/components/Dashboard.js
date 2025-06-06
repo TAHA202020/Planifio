@@ -178,15 +178,15 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
               My Projects
             </button>
         <label className="btn btn-primary btn-sm rounded-sm text-sm font-bold" htmlFor="modal-3">
-              Create Project
+              Create Board
             </label>
             <div class="dropdown">
-        <label class="btn btn-primary btn-sm rounded-sm text-sm font-bold" tabindex="0">Recent <RiArrowDropDownLine className="text-xl"/></label>
+        {/* <label class="btn btn-primary btn-sm rounded-sm text-sm font-bold" tabindex="0">Recent <RiArrowDropDownLine className="text-xl"/></label>
           <div class="dropdown-menu dropdown-menu-bottom-right gap-1 rounded-sm p-1">
             <a class="dropdown-item text-sm">Profile</a>
             <a tabindex="-1" class="dropdown-item text-sm">Account settings</a>
             <a tabindex="-1" class="dropdown-item text-sm">Subscriptions</a>
-          </div>
+          </div> */}
         </div>
         
           </div>
