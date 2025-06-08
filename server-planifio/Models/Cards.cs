@@ -15,10 +15,15 @@ public class Card
 
     public DateTime? DueTime { get; set; }
 
+
+
+
     [Required]
     public Guid ListId { get; set; }
 
     // Navigation property
     [ForeignKey("ListId")]
     public Lists List { get; set; }
+    
+    public List<Files> Files { get; set; } = new List<Files>();
 }

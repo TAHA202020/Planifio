@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace server_planifio.Migrations
 {
     [DbContext(typeof(PlanifioDbContext))]
-    [Migration("20250418164358_AddingForeignKeys")]
-    partial class AddingForeignKeys
+    [Migration("20250608033926_AddCardFilesRelationship")]
+    partial class AddCardFilesRelationship
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -53,6 +53,9 @@ namespace server_planifio.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<DateTime?>("DueTime")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<Guid>("ListId")
                         .HasColumnType("char(36)");
 
@@ -68,6 +71,30 @@ namespace server_planifio.Migrations
                     b.HasIndex("ListId");
 
                     b.ToTable("Cards");
+                });
+
+            modelBuilder.Entity("Files", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("CardId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CardId");
+
+                    b.ToTable("Files");
                 });
 
             modelBuilder.Entity("Lists", b =>
@@ -97,6 +124,12 @@ namespace server_planifio.Migrations
                 {
                     b.Property<string>("Email")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime(6)");
 
                     b.Property<int?>("otp")
                         .HasColumnType("int");
@@ -131,15 +164,36 @@ namespace server_planifio.Migrations
                     b.Navigation("List");
                 });
 
+            modelBuilder.Entity("Files", b =>
+                {
+                    b.HasOne("Card", "Card")
+                        .WithMany("Files")
+                        .HasForeignKey("CardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Card");
+                });
+
             modelBuilder.Entity("Lists", b =>
                 {
                     b.HasOne("Board", "Board")
-                        .WithMany()
+                        .WithMany("Lists")
                         .HasForeignKey("BoardId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Board");
+                });
+
+            modelBuilder.Entity("Board", b =>
+                {
+                    b.Navigation("Lists");
+                });
+
+            modelBuilder.Entity("Card", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("Lists", b =>

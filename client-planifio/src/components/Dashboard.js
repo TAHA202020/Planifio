@@ -18,6 +18,7 @@ export default function Dashboard({}) {
   const isAuth = BoardsMenu((state) => state.isAuthenticated);
   const setBoardsStore = BoardsStore((state) => state.setBoardsStore);
   function transformBackendData(backendBoards) {
+    console.log("Transforming backend data:", backendBoards);
     const boards = [];
     const lists = {};
     const cards = {};
@@ -36,6 +37,7 @@ export default function Dashboard({}) {
             title: card.title,
             description: card.description || "",
             dueDate: card.dueTime || null,
+            files: card.files || [],
           };
 
           cards[card.id] = cardData;
@@ -175,7 +177,7 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
         </svg>
             <button className="btn rounded-sm btn-sm btn-primary font-bold" onClick={toggleSidebar}>
 				<HiOutlineRectangleStack className="h-full mr-2" />
-              My Projects
+              My Boards
             </button>
         <label className="btn btn-primary btn-sm rounded-sm text-sm font-bold" htmlFor="modal-3">
               Create Board

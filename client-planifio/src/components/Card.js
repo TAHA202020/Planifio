@@ -17,9 +17,11 @@ import { GiConfirmed } from "react-icons/gi";
 import { MdOutlineCancel } from "react-icons/md";
 import { LuClock5 } from "react-icons/lu";
 import { BsTextParagraph } from "react-icons/bs";
+import { BsFiles } from "react-icons/bs";
+import FilesUpload from "./FilesUpload";
 
 
-function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTitle}) {
+function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTitle ,files}) {
   const dueDateInputRef = useRef(null);
   const daysLeft = Math.ceil(
     (new Date(dueDate) - Date.now()) / (1000 * 60 * 60 * 24)
@@ -136,7 +138,9 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
         console.error("Error:", error);
       });
   }
-
+  const uploadFiles=(event,cardId)=>{
+    console.log(event.target.files);
+  }
 
   return (
     <>
@@ -231,6 +235,10 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
               
             </div>
           )}
+          <div>
+            <h2 className="text-lg font-bold flex items-center gap-2 mb-2"><BsFiles/>files</h2>
+            <FilesUpload cardId={cardId} files={files}/>
+          </div>
           <div className="absolute bottom-2 right-2 flex justify-end "> <button className="btn btn-solid-error rounded-sm" onClick={()=>deleteCard(cardId)}>delete</button></div>
           
         </div>

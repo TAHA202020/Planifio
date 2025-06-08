@@ -70,6 +70,30 @@ namespace server_planifio.Migrations
                     b.ToTable("Cards");
                 });
 
+            modelBuilder.Entity("Files", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<Guid>("CardId")
+                        .HasColumnType("char(36)");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CardId");
+
+                    b.ToTable("Files");
+                });
+
             modelBuilder.Entity("Lists", b =>
                 {
                     b.Property<Guid>("Id")
@@ -137,6 +161,17 @@ namespace server_planifio.Migrations
                     b.Navigation("List");
                 });
 
+            modelBuilder.Entity("Files", b =>
+                {
+                    b.HasOne("Card", "Card")
+                        .WithMany("Files")
+                        .HasForeignKey("CardId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Card");
+                });
+
             modelBuilder.Entity("Lists", b =>
                 {
                     b.HasOne("Board", "Board")
@@ -151,6 +186,11 @@ namespace server_planifio.Migrations
             modelBuilder.Entity("Board", b =>
                 {
                     b.Navigation("Lists");
+                });
+
+            modelBuilder.Entity("Card", b =>
+                {
+                    b.Navigation("Files");
                 });
 
             modelBuilder.Entity("Lists", b =>

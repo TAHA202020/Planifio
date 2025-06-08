@@ -5,7 +5,7 @@
 namespace server_planifio.Migrations
 {
     /// <inheritdoc />
-    public partial class AddBoardListsNavProp : Migration
+    public partial class AddCardFilesRelationship : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

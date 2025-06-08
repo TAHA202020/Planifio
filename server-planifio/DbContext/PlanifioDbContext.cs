@@ -8,4 +8,5 @@ public class PlanifioDbContext : DbContext
     public DbSet<Lists> Lists { get; set; }
     public DbSet<Board> Boards { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Files> Files { get; set; }
 }

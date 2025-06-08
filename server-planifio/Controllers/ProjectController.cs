@@ -15,7 +15,7 @@ public class BoardsController : ControllerBase
         _context = context;
     }
 
-    
+
     [HttpPost("lists/create")]
     public async Task<JsonResult> CreateList([FromBody] Lists lists)
     {
@@ -57,7 +57,7 @@ public class BoardsController : ControllerBase
 
 
 
-    
+
     [HttpPost("create")]
     public async Task<JsonResult> Createboard([FromBody] Board board)
     {
@@ -77,6 +77,7 @@ public class BoardsController : ControllerBase
         return new JsonResult(new { status = "success", message = "board created successfully", boardId = board.Id });
     }
     [HttpGet("get")]
+    //getFiles Too
     public async Task<JsonResult> GetBoards()
     {
         var userEmail = HttpContext.User?.FindFirst(ClaimTypes.Email)?.Value;
@@ -86,6 +87,30 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = "User email not found" });
         }
 
+        // var boards = await _context.Boards
+        //     .Where(b => b.UserEmail == userEmail)
+        //     .Select(b => new
+        //     {
+        //         b.Id,
+        //         b.Name,
+        //         Lists = b.Lists
+        //             .OrderBy(l => l.Position)
+        //             .Select(l => new
+        //             {
+        //                 l.Id,
+        //                 l.Title,
+        //                 Cards = l.Cards
+        //                     .OrderBy(c => c.Position)
+        //                     .Select(c => new
+        //                     {
+        //                         c.Id,
+        //                         c.Title,
+        //                         c.Description,
+        //                         c.DueTime,
+        //                     }).ToList()
+        //             }).ToList()
+        //     })
+        //     .ToListAsync();
         var boards = await _context.Boards
             .Where(b => b.UserEmail == userEmail)
             .Select(b => new
@@ -106,18 +131,20 @@ public class BoardsController : ControllerBase
                                 c.Title,
                                 c.Description,
                                 c.DueTime,
+                                Files = c.Files.Select(f => new { f.Id, f.Name, f.FileType }).ToList()
                             }).ToList()
                     }).ToList()
             })
             .ToListAsync();
-        return new JsonResult(new { status = "success", boards,email = userEmail });
+
+        return new JsonResult(new { status = "success", boards, email = userEmail });
     }
     public async Task<int> GetLastPositionWithinBoard(Guid boardId)
     {
         var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
-        
+
         var isOwner = await _context.Boards.AnyAsync(b => b.Id == boardId && b.UserEmail == userEmail);
-        
+
         var board = await _context.Boards
             .Include(b => b.Lists)
             .FirstOrDefaultAsync(b => b.Id == boardId);
@@ -134,7 +161,7 @@ public class BoardsController : ControllerBase
 
         return lastPosition;
     }
-    
+
     [HttpPost("list/validate-drag")]
     public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPositionDto updateListPositionDto)
     {
@@ -194,7 +221,7 @@ public class BoardsController : ControllerBase
     }
 
 
-    
+
     [HttpPost("cards/create")]
     public async Task<JsonResult> CreateCard([FromBody] Card card)
     {
@@ -241,7 +268,7 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = ex.Message });
         }
     }
-    
+
     [HttpPost("cards/move")]
     public async Task<JsonResult> MoveCard([FromBody] MoveCardDto dto)
     {
@@ -327,7 +354,7 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = $"Error moving card: {ex.Message}" });
         }
     }
-    
+
     [HttpPost("edit/card/description")]
     public async Task<JsonResult> EditCardDescription([FromBody] Card card)
     {
@@ -343,7 +370,7 @@ public class BoardsController : ControllerBase
             {
                 return new JsonResult(new { status = "error", message = "You are not authorized to edit this card" });
             }
-            
+
 
             var existingCard = await _context.Cards.FindAsync(card.Id);
             if (existingCard == null)
@@ -362,7 +389,7 @@ public class BoardsController : ControllerBase
         }
 
     }
-    
+
     [HttpPost("edit/card/due-date")]
     public async Task<JsonResult> EditCardDueDate([FromBody] Card card)
     {
@@ -378,7 +405,7 @@ public class BoardsController : ControllerBase
             {
                 return new JsonResult(new { status = "error", message = "You are not authorized to edit this card" });
             }
-            
+
 
             var existingCard = await _context.Cards.FindAsync(card.Id);
             if (existingCard == null)
@@ -396,7 +423,7 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = ex.Message });
         }
     }
-    
+
     [HttpPost("delete/card")]
     public async Task<JsonResult> DeleteCard([FromBody] Card card)
     {
@@ -412,7 +439,7 @@ public class BoardsController : ControllerBase
             {
                 return new JsonResult(new { status = "error", message = "You are not authorized to edit this card" });
             }
-            
+
 
             var existingCard = await _context.Cards.FindAsync(card.Id);
             if (existingCard == null)
@@ -448,7 +475,7 @@ public class BoardsController : ControllerBase
 
 
     //delete list remove its cards
-    
+
     [HttpPost("list/delete")]
     public async Task<JsonResult> DeleteList([FromBody] Lists lists)
     {
@@ -501,7 +528,7 @@ public class BoardsController : ControllerBase
         }
     }
     //delete board remove its lists and cards   
-    
+
     [HttpPost("delete")]
     public async Task<JsonResult> DeleteBoard([FromBody] Board board)
     {
@@ -542,7 +569,99 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = ex.Message });
         }
     }
+    [HttpGet("file/{filename}")]
+    [Authorize]
+    public IActionResult GetImage(string filename)
+    {
+        if (string.IsNullOrEmpty(filename) || filename.Contains(".."))
+            return BadRequest("Invalid filename");
+        var imagePath = Path.Combine("files", filename);
 
+        // Check if the file exists
+        if (!System.IO.File.Exists(imagePath))
+            return NotFound();
+
+        // Guess content type (optional, for image/jpeg etc.)
+        var contentType = "application/octet-stream";
+        new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider()
+            .TryGetContentType(filename, out contentType);
+
+        // Return the image file
+        var fileBytes = System.IO.File.ReadAllBytes(imagePath);
+        return File(fileBytes, contentType);
+    }
+
+
+    [HttpPost("file/upload")]
+    public async Task<JsonResult> UploadFile([FromForm] IFormFile file, [FromForm] Guid cardId)
+    {
+        try
+        {
+            if (file == null || file.Length == 0 || cardId == Guid.Empty)
+            {
+                return new JsonResult(new { status = "error", message = "Invalid file or card ID" });
+            }
+
+            if (!isOwnerOfCard(cardId))
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to upload files to this card" });
+            }
+
+            var uploadsFolder = Path.Combine("files");
+            if (!Directory.Exists(uploadsFolder))
+            {
+                Directory.CreateDirectory(uploadsFolder);
+            }
+            Guid id= Guid.NewGuid();
+            var fileName = $"{id}_{file.FileName}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var newFile = new Files
+            {
+                Id = id,
+                Name = fileName,
+                FileType = file.ContentType,
+                CardId = cardId
+            };
+
+            _context.Files.Add(newFile);
+            await _context.SaveChangesAsync();
+
+            return new JsonResult(new { status = "success", message = "File uploaded successfully", newFile });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { status = "error", message = ex.Message });
+        }
+    }
+
+
+    private bool isOwnerOfBoard(Guid boardId)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        return _context.Boards.Any(b => b.Id == boardId && b.UserEmail == userEmail);
+    }
+    private bool isOwnerOfList(Guid listId)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        return _context.Lists.Any(l => l.Id == listId && l.Board.UserEmail == userEmail);
+    }
+    private bool isOwnerOfCard(Guid cardId)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        return _context.Cards.Any(c => c.Id == cardId && c.List.Board.UserEmail == userEmail);
+    }
+
+    private bool isOwnerOfFile(Guid fileId)
+    {
+        var userEmail = User.FindFirst(ClaimTypes.Email)?.Value;
+        return _context.Files.Any(f => f.Id == fileId && f.Card.List.Board.UserEmail == userEmail);
+    }
 
 }
 
