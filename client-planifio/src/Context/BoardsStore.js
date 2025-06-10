@@ -215,6 +215,15 @@ const BoardsStore = create((set) => ({
       events: updatedEvents,
     };
   }),
+  addFiletoCard: (cardId, newFile) => set((state) => {
+    const updatedCard = { ...state.cards[cardId], files: [...(state.cards[cardId].files || []), newFile] };
+    return {
+      cards: {
+        ...state.cards,
+        [cardId]: updatedCard,
+      },
+    };
+  }),
 }));
 
 export default BoardsStore;

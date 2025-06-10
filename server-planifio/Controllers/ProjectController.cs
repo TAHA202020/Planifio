@@ -17,6 +17,7 @@ public class BoardsController : ControllerBase
 
 
     [HttpPost("lists/create")]
+    [Authorize]
     public async Task<JsonResult> CreateList([FromBody] Lists lists)
     {
         try
@@ -59,6 +60,7 @@ public class BoardsController : ControllerBase
 
 
     [HttpPost("create")]
+    [Authorize]
     public async Task<JsonResult> Createboard([FromBody] Board board)
     {
         if (board == null || string.IsNullOrEmpty(board.Name))
@@ -77,6 +79,7 @@ public class BoardsController : ControllerBase
         return new JsonResult(new { status = "success", message = "board created successfully", boardId = board.Id });
     }
     [HttpGet("get")]
+    [Authorize]
     //getFiles Too
     public async Task<JsonResult> GetBoards()
     {
@@ -86,31 +89,6 @@ public class BoardsController : ControllerBase
             HttpContext.Response.StatusCode = 401;
             return new JsonResult(new { status = "error", message = "User email not found" });
         }
-
-        // var boards = await _context.Boards
-        //     .Where(b => b.UserEmail == userEmail)
-        //     .Select(b => new
-        //     {
-        //         b.Id,
-        //         b.Name,
-        //         Lists = b.Lists
-        //             .OrderBy(l => l.Position)
-        //             .Select(l => new
-        //             {
-        //                 l.Id,
-        //                 l.Title,
-        //                 Cards = l.Cards
-        //                     .OrderBy(c => c.Position)
-        //                     .Select(c => new
-        //                     {
-        //                         c.Id,
-        //                         c.Title,
-        //                         c.Description,
-        //                         c.DueTime,
-        //                     }).ToList()
-        //             }).ToList()
-        //     })
-        //     .ToListAsync();
         var boards = await _context.Boards
             .Where(b => b.UserEmail == userEmail)
             .Select(b => new
@@ -131,7 +109,7 @@ public class BoardsController : ControllerBase
                                 c.Title,
                                 c.Description,
                                 c.DueTime,
-                                Files = c.Files.Select(f => new { f.Id, f.Name, f.FileType }).ToList()
+                                Files = c.Files.Select(f => new { f.Name, f.FileType }).ToList()
                             }).ToList()
                     }).ToList()
             })
@@ -163,6 +141,7 @@ public class BoardsController : ControllerBase
     }
 
     [HttpPost("list/validate-drag")]
+    [Authorize]
     public async Task<JsonResult> UpdateListPositionAsync([FromBody] UpdateListPositionDto updateListPositionDto)
     {
         var listId = updateListPositionDto.ListId;
@@ -223,6 +202,7 @@ public class BoardsController : ControllerBase
 
 
     [HttpPost("cards/create")]
+    [Authorize]
     public async Task<JsonResult> CreateCard([FromBody] Card card)
     {
         try
@@ -270,6 +250,7 @@ public class BoardsController : ControllerBase
     }
 
     [HttpPost("cards/move")]
+    [Authorize]
     public async Task<JsonResult> MoveCard([FromBody] MoveCardDto dto)
     {
         try
@@ -356,6 +337,7 @@ public class BoardsController : ControllerBase
     }
 
     [HttpPost("edit/card/description")]
+    [Authorize]
     public async Task<JsonResult> EditCardDescription([FromBody] Card card)
     {
         try
@@ -391,6 +373,7 @@ public class BoardsController : ControllerBase
     }
 
     [HttpPost("edit/card/due-date")]
+    [Authorize]
     public async Task<JsonResult> EditCardDueDate([FromBody] Card card)
     {
         try
@@ -425,6 +408,7 @@ public class BoardsController : ControllerBase
     }
 
     [HttpPost("delete/card")]
+    [Authorize]
     public async Task<JsonResult> DeleteCard([FromBody] Card card)
     {
         try
@@ -477,6 +461,7 @@ public class BoardsController : ControllerBase
     //delete list remove its cards
 
     [HttpPost("list/delete")]
+    [Authorize]
     public async Task<JsonResult> DeleteList([FromBody] Lists lists)
     {
         try
@@ -530,6 +515,7 @@ public class BoardsController : ControllerBase
     //delete board remove its lists and cards   
 
     [HttpPost("delete")]
+    [Authorize]
     public async Task<JsonResult> DeleteBoard([FromBody] Board board)
     {
         try
@@ -593,6 +579,7 @@ public class BoardsController : ControllerBase
 
 
     [HttpPost("file/upload")]
+    [Authorize]
     public async Task<JsonResult> UploadFile([FromForm] IFormFile file, [FromForm] Guid cardId)
     {
         try
@@ -632,7 +619,8 @@ public class BoardsController : ControllerBase
             _context.Files.Add(newFile);
             await _context.SaveChangesAsync();
 
-            return new JsonResult(new { status = "success", message = "File uploaded successfully", newFile });
+            return new JsonResult(new { status = "success", message = "File uploaded successfully", newFile=new { Name = fileName,
+                FileType = file.ContentType } });
         }
         catch (Exception ex)
         {

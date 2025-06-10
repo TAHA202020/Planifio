@@ -11,14 +11,15 @@ import Editor, {
   BtnItalic,
   Toolbar,
 } from "react-simple-wysiwyg";
-import { MdOutlineDescription } from "react-icons/md";
 import BoardsStore from "../Context/BoardsStore";
 import { GiConfirmed } from "react-icons/gi";
 import { MdOutlineCancel } from "react-icons/md";
 import { LuClock5 } from "react-icons/lu";
 import { BsTextParagraph } from "react-icons/bs";
-import { BsFiles } from "react-icons/bs";
 import FilesUpload from "./FilesUpload";
+import ListDropdown from "./ListDropdown";
+import { FiLink } from "react-icons/fi";
+
 
 
 function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTitle ,files}) {
@@ -26,25 +27,14 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
   const daysLeft = Math.ceil(
     (new Date(dueDate) - Date.now()) / (1000 * 60 * 60 * 24)
   );
+  console.log("description", description);
   const [isEditing, setIsEditing] = useState(false);
   const editDescription = BoardsStore((state) => state.editDescription);
   const [editingDate, seteditingDate] = useState(false);
   const editDueDate = BoardsStore((state) => state.editDueDate);
   const [html, setHtml] = useState(description);
   const modalId = `card-modal-${cardId}`;
-  /*
-  {dueDate &&
-                  (daysLeft === 1 ? (
-                    <span className="badge badge-xs ml-2 badge-warning rounded-sm"> bg-[#f31260]
-                      {"<24h left"}
-                    </span>
-                  ) : daysLeft < 1 ? (
-                    <span className="badge badge-xs ml-2  badge-error rounded-sm"> bg-[#f31260]
-                      Overdue
-                    </span>
-                  ) : (
-                    null bg-[#3a3a3a]
-                  ))}*/
+
   const cardClassdueDate= dueDate && daysLeft < 1 ? "bg-[#f31260]" : dueDate && daysLeft === 1 ? "bg-[#f59e0b]" : "bg-[#3a3a3a]";
   const getItemStyle = (style) => ({
     ...style,
@@ -155,9 +145,11 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
             setHtml(description);
           }}
         ></label>
-        <div className="modal-content flex flex-col gap-5 w-[50vw] h-[75vh] overflow-y-auto relative rounded-sm">
-          <div className="flex items-center justify-between gap-2 bg-[#232323] px-3 py-1 rounded-sm">
+        <div className="modal-content flex flex-col gap-5 w-[50vw] h-[80vh] overflow-y-auto relative rounded-md">
+          <div className="w-full flex justify-end"><ListDropdown onDelete={()=>deleteCard(cardId)}/></div>
+          <div className="flex items-center justify-between gap-2 bg-[#232323] px-2 py-1 rounded-sm">
             <h2 className="text-xl font-bold overflow-hidden text-nowrap"> {title}</h2>
+            
             {editingDate ? (
         <div className="flex items-center gap-1">
           <input
@@ -194,14 +186,14 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
           <div>
             <div className=" flex items-center justify-between font-bold text-lg  ">
               <div className="flex items-center gap-2">
-                <MdOutlineDescription />
-                <p>description</p>
+                
+                <p className="text-lg">Description :</p>
               </div>
               
             </div>
             {!isEditing && <div
-              className="bg-[#232323] rounded mt-2 kbd w-full block text-sm"
-              dangerouslySetInnerHTML={{ __html: html }}
+              className="bg-[#232323] rounded mt-2 kbd w-full block text-sm cursor-pointer"
+              dangerouslySetInnerHTML={{ __html: html==="<br>" || html ==="" || html ==='<div bis_skin_checked="1"><br></div>'? "<i>Click To Add Description</i>" : html }}
               onClick={() => {
                   setHtml(description);
                   setIsEditing(!isEditing);
@@ -236,10 +228,14 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
             </div>
           )}
           <div>
-            <h2 className="text-lg font-bold flex items-center gap-2 mb-2"><BsFiles/>files</h2>
+
+            <div className="w-full  mb-2 flex items-center justify-between pr-2">
+              <h2 className="text-xl font-bold flex items-center gap-2 ">Files :</h2>
+              <label htmlFor={cardId+"fileupload"} className="btn btn-primary btn-sm font-normal">+ add file</label>
+            </div>
             <FilesUpload cardId={cardId} files={files}/>
           </div>
-          <div className="absolute bottom-2 right-2 flex justify-end "> <button className="btn btn-solid-error rounded-sm" onClick={()=>deleteCard(cardId)}>delete</button></div>
+          
           
         </div>
       </div>
@@ -257,7 +253,7 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
               <div className="text-wrap text-sm w-full break-words whitespace-normal">
                 {title}
               </div>
-              <div className="flex items-center gap-2 overflow-hidden text-[#d3d3d3]">
+              <div className="flex items-center gap-3 overflow-hidden text-[#d3d3d3]">
                 {dueDate && (
                   <div className=" flex items-center gap-1 text-xs">
                     <LuClock5/>
@@ -269,7 +265,13 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
                     </div>
                   </div>
                 )}
-                {description && description!=="<br>" && (<BsTextParagraph/>)}
+                {description && description!=="<br>" && description!=='<div bis_skin_checked="1"><br></div>' && (<BsTextParagraph/>)}
+                {files && files.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs">{files.length}</span>
+                    <FiLink/>
+                  </div>
+                )}
               </div>
               
             </label>

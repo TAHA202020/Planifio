@@ -1,8 +1,5 @@
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Microsoft.AspNetCore.Authentication;
 var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 //controllers Services
@@ -25,13 +22,16 @@ builder.Services.AddDbContext<PlanifioDbContext>(options =>
         builder.Configuration.GetConnectionString("PlanifioContext"),
         new MySqlServerVersion(new Version(10, 4, 32))
     ));
+//Authentication using custom handler
+builder.Services.AddAuthentication("JwtCookie")
+    .AddScheme<AuthenticationSchemeOptions, JwtCookieAuthenticationHandler>("JwtCookie", options => { });
+
+
 
 var app = builder.Build();
 app.UseCors("AllowMyApp");
-app.UseWhen(ctx => ctx.Request.Path.StartsWithSegments("/boards"), builder =>
-{
-    builder.UseMiddleware<JwtCookieMiddleware>();
-});
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
