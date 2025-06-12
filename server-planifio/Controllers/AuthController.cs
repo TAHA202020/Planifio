@@ -121,7 +121,8 @@ public class AuthController : ControllerBase
             signingCredentials: creds
         );
         var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-        context.Response.Cookies.Append("access_token", tokenString, new CookieOptions { HttpOnly = true });
+        context.Response.Cookies.Append("access_token", tokenString, new CookieOptions { HttpOnly = true,
+                Secure = true,SameSite = SameSiteMode.Strict});
         return new JsonResult(new { token = tokenString });
     }
 

@@ -145,7 +145,7 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
             setHtml(description);
           }}
         ></label>
-        <div className="modal-content flex flex-col gap-5 w-[50vw] h-[80vh] overflow-y-auto relative rounded-md">
+        <div className="modal-content flex flex-col gap-5 w-[100vw] md:w-[50vw] h-[80vh] overflow-y-auto relative rounded-md">
           <div className="w-full flex justify-end"><ListDropdown onDelete={()=>deleteCard(cardId)}/></div>
           <div className="flex items-center justify-between gap-2 bg-[#232323] px-2 py-1 rounded-sm">
             <h2 className="text-xl font-bold overflow-hidden text-nowrap"> {title}</h2>

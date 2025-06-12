@@ -224,6 +224,16 @@ const BoardsStore = create((set) => ({
       },
     };
   }),
+  removeFileFromCard: (cardId, fileId) => set((state) => {
+    const updatedCard = { ...state.cards[cardId] };
+    updatedCard.files = updatedCard.files.filter(file => file.id !== fileId);
+    return {
+      cards: {
+        ...state.cards,
+        [cardId]: updatedCard,
+      },
+    };}),
+    
 }));
 
 export default BoardsStore;

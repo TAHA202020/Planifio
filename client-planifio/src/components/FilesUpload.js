@@ -40,7 +40,7 @@ export default function FilesUpload({ cardId  ,files}) {
         <div className="flex items-start flex-col gap-2 w-full max-h-[500px] overflow-y-auto ">
             <input type="file" id={cardId+"fileupload"} className="hidden" onChange={uploadFile} accept=".png,.jpeg,.webp,.gif,.jpg,.pdf,.docx"/>
             {files && files.map((file, index) => (
-                <FileContainer key={index} fileUrl={file.name} fileType={file.fileType} />
+                <FileContainer key={index} fileUrl={file.name} fileType={file.fileType} id={file.id} cardId={cardId} />
             ))}
             
     </div>

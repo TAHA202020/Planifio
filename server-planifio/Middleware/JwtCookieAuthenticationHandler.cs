@@ -72,8 +72,7 @@ public class JwtCookieAuthenticationHandler : AuthenticationHandler<Authenticati
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddMinutes(10)
+                SameSite = SameSiteMode.Strict
             });
 
             principal = tokenHandler.ValidateToken(newAccessToken, new TokenValidationParameters

@@ -4,10 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 public class IndexController:ControllerBase{
 
 
-[HttpGet("")]
-public string Index()
-{
-    return "hello from server";  
-}
+    [HttpGet("")]
+    public string Index()
+    {
+        return "hello from server";  
+    }
 
 }

@@ -109,7 +109,7 @@ public class BoardsController : ControllerBase
                                 c.Title,
                                 c.Description,
                                 c.DueTime,
-                                Files = c.Files.Select(f => new { f.Name, f.FileType }).ToList()
+                                Files = c.Files.Select(f => new {f.Id, f.Name, f.FileType }).ToList()
                             }).ToList()
                     }).ToList()
             })
@@ -619,7 +619,7 @@ public class BoardsController : ControllerBase
             _context.Files.Add(newFile);
             await _context.SaveChangesAsync();
 
-            return new JsonResult(new { status = "success", message = "File uploaded successfully", newFile=new { Name = fileName,
+            return new JsonResult(new { status = "success", message = "File uploaded successfully", newFile=new { Id=id ,Name = fileName,
                 FileType = file.ContentType } });
         }
         catch (Exception ex)
@@ -627,7 +627,49 @@ public class BoardsController : ControllerBase
             return new JsonResult(new { status = "error", message = ex.Message });
         }
     }
+    //delete file from file id
+    [HttpPost("file/delete")]
+    [Authorize]
+    public async Task<JsonResult> DeleteFile([FromBody] Files file)
+    {
+        try
+        {
+            if (file == null || file.Id == Guid.Empty)
+            {
+                return new JsonResult(new { status = "error", message = "Invalid file data" });
+            }
 
+            if (!isOwnerOfFile(file.Id))
+            {
+                return new JsonResult(new { status = "error", message = "You are not authorized to delete this file" });
+            }
+
+            var existingFile = await _context.Files.FindAsync(file.Id);
+            if (existingFile == null)
+            {
+                return new JsonResult(new { status = "error", message = "File not found" });
+            }
+
+            // Remove the file from the database
+            _context.Files.Remove(existingFile);
+
+            // Delete the physical file
+            var filePath = Path.Combine("files", existingFile.Name);
+            if (System.IO.File.Exists(filePath))
+            {
+                Console.WriteLine($"Deleting file: {filePath}");
+                System.IO.File.Delete(filePath);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return new JsonResult(new { status = "success", message = "File deleted successfully" });
+        }
+        catch (Exception ex)
+        {
+            return new JsonResult(new { status = "error", message = ex.Message });
+        }
+    }
 
     private bool isOwnerOfBoard(Guid boardId)
     {
