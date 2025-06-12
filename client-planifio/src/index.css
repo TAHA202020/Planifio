@@ -98,4 +98,15 @@
     .dropdown:focus-within .dropdown-content {
       display: block;
     }
-    
+    .marquee {
+  animation: scroll-left linear infinite;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
