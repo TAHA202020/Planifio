@@ -433,6 +433,27 @@ public class BoardsController : ControllerBase
 
             var deletedCardPosition = existingCard.Position;
             var listId = existingCard.ListId;
+            // Check if the card has files and delete them
+            var filesToDelete = await _context.Files
+                .Where(f => f.CardId == existingCard.Id)
+                .ToListAsync();
+            if (filesToDelete.Any())
+            {
+                // Remove files from the database
+                _context.Files.RemoveRange(filesToDelete);
+
+                // Delete physical files from the server
+                foreach (var file in filesToDelete)
+                {
+                    var filePath = Path.Combine("files", file.Name);
+                    if (System.IO.File.Exists(filePath))
+                    {
+                        System.IO.File.Delete(filePath);
+                    }
+                }
+            }
+            // Remove the card's files from the database
+            _context.Files.RemoveRange(filesToDelete);
 
             // Remove the card
             _context.Cards.Remove(existingCard);

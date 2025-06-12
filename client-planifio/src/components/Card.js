@@ -187,7 +187,7 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
             <div className=" flex items-center justify-between font-bold text-lg  ">
               <div className="flex items-center gap-2">
                 
-                <p className="text-lg">Description :</p>
+                <p className="text-lg font-medium">Description :</p>
               </div>
               
             </div>
@@ -230,8 +230,8 @@ function Card({ title, cardId, cardIndex, description, dueDate , boardId,listTit
           <div>
 
             <div className="w-full  mb-2 flex items-center justify-between pr-2">
-              <h2 className="text-xl font-bold flex items-center gap-2 ">Files :</h2>
-              <label htmlFor={cardId+"fileupload"} className="btn btn-primary btn-sm font-normal">+ add file</label>
+              <h2 className="text-lg font-medium flex items-center gap-2 ">Files :</h2>
+              <label htmlFor={cardId+"fileupload"} className="btn btn-primary btn-xs font-bold">+ add file</label>
             </div>
             <FilesUpload cardId={cardId} files={files}/>
           </div>
