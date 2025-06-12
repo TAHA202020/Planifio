@@ -201,7 +201,7 @@ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
             <div class="dropdown-menu dropdown-menu-bottom-left bg-[#1a1a1a] rounded-md w-[150px] mt-2">
               <span className="text-white w-full text-center mt-[10px]" >{email}</span>
               <div className="divider"></div>
-              <button class="dropdown-item text-sm btn btn-solid-error flex flex-row justify-between px-5" onClick={handleLogout}> Leave <FaDoorOpen/></button>
+              <button class="dropdown-item text-sm btn btn-solid-error flex flex-row justify-between px-5" onClick={handleLogout}> Sign out <FaDoorOpen/></button>
 
             </div>
           </div>
