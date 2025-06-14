@@ -6,6 +6,7 @@ using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authorization;
 [Route("")]
 public class AuthController : ControllerBase
 {
@@ -182,6 +183,7 @@ public class AuthController : ControllerBase
         }
     }
     [HttpPost("auth/logout")]
+    [Authorize]
     public JsonResult Logout()
     {
         HttpContext.Request.Cookies.TryGetValue("access_token", out string accessToken);
@@ -189,7 +191,7 @@ public class AuthController : ControllerBase
         var tokenHandler = new JwtSecurityTokenHandler();
         var jwtToken = tokenHandler.ReadJwtToken(accessToken);
         string userEmail = jwtToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
-        
+
         if (userEmail != null)
         {
             var user = _context.Users.SingleOrDefault(u => u.Email == userEmail);

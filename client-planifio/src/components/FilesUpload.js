@@ -27,7 +27,6 @@ export default function FilesUpload({ cardId  ,files}) {
             }
         }).then(data => {
             let { newFile } = data;
-            console.log("New file uploaded:", newFile);
             addFiletoCard(cardId, newFile);
         }).catch(error => {
             console.error('Error uploading file:', error);
