@@ -2,7 +2,12 @@
 
 Planifio is a kanban-style task manager where users can create boards, lists, and cards — and manage tasks with drag-and-drop, descriptions, file uploads, and due dates. Cards with due dates are automatically displayed on a calendar.
 
-![Planifio](./images/banner.png)
+
+<div style="display:flex; align-items:center;">
+<svg fill="none" height="42" viewBox="0 0 32 32" width="42" xmlns="http://www.w3.org/2000/svg"><rect height="100%" rx="16" width="100%"></rect><path clip-rule="evenodd" d="M17.6482 10.1305L15.8785 7.02583L7.02979 22.5499H10.5278L17.6482 10.1305ZM19.8798 14.0457L18.11 17.1983L19.394 19.4511H16.8453L15.1056 22.5499H24.7272L19.8798 14.0457Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+<h2 style="margin:0; padding:0;  ">Planifio</h2>
+</div>
 
 ---
 
